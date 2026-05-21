@@ -12,6 +12,7 @@ out/
 build/
 dist/
 coverage/
+festival-app/backend/target/
 
 # env
 .env*
