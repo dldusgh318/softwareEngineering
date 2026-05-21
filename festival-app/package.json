@@ -5,7 +5,9 @@
   "packageManager": "pnpm@10.33.2",
   "scripts": {
     "dev": "pnpm --filter frontend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
     "build": "pnpm --filter frontend build",
+    "build:frontend": "pnpm --filter frontend build",
     "start": "pnpm --filter frontend start",
     "lint": "pnpm --filter frontend lint",
     "lint:fix": "pnpm --filter frontend lint:fix",

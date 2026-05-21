@@ -1,3 +1,4 @@
 {
-  "prettier.prettierPath": "festival-app/frontend/node_modules/prettier/index.cjs"
+  "prettier.prettierPath": "festival-app/frontend/node_modules/prettier/index.cjs",
+  "java.compile.nullAnalysis.mode": "automatic"
 }
