@@ -5,16 +5,14 @@ import com.festivalapp.dto.TimelineEventResponse;
 import com.festivalapp.repository.timeline.TimelineRepository;
 import java.time.LocalDate;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class TimelineService {
 
   private final TimelineRepository timelineRepository;
-
-  public TimelineService(TimelineRepository timelineRepository) {
-    this.timelineRepository = timelineRepository;
-  }
 
   public List<TimelineEventResponse> getTimeline(LocalDate date) {
     var timelineEvents = date == null
