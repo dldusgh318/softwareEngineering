@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { getTimeline } from "@/apis/timeline/timeline.api";
 import SiteHeader from "@/components/SiteHeader";
@@ -25,9 +26,15 @@ import {
 
 export default function SchedulePage() {
   const [selectedDate, setSelectedDate] = useState(festivalDates[0].value);
-  const [events, setEvents] = useState<TimelineEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
+  const {
+    data: events = [],
+    error,
+    isError,
+    isLoading,
+  } = useQuery<TimelineEvent[]>({
+    queryKey: ["timeline", selectedDate],
+    queryFn: ({ signal }) => getTimeline({ date: selectedDate, signal }),
+  });
 
   const selectedDateLabel = useMemo(
     () => festivalDates.find((date) => date.value === selectedDate)?.label ?? "",
@@ -38,39 +45,6 @@ export default function SchedulePage() {
     [events, selectedDate],
   );
   const timetableHeight = (timetableEndHour - timetableStartHour) * hourHeight;
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function fetchTimeline() {
-      setIsLoading(true);
-      setErrorMessage("");
-
-      try {
-        const data = await getTimeline({
-          date: selectedDate,
-          signal: controller.signal,
-        });
-
-        setEvents(data);
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") {
-          return;
-        }
-
-        setErrorMessage(error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.");
-        setEvents([]);
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    fetchTimeline();
-
-    return () => controller.abort();
-  }, [selectedDate]);
 
   return (
     <main className="bg-brand-navy text-text-primary min-h-screen">
@@ -121,19 +95,19 @@ export default function SchedulePage() {
           <div className="mt-6">
             {isLoading && <TimelineLoadingSkeleton timetableHeight={timetableHeight} />}
 
-            {!isLoading && errorMessage && (
+            {!isLoading && isError && (
               <div className="border-brand-coral/30 bg-brand-coral/10 text-brand-coral-soft rounded-2xl border p-5 text-sm font-bold">
-                {errorMessage}
+                {error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."}
               </div>
             )}
 
-            {!isLoading && !errorMessage && events.length === 0 && (
+            {!isLoading && !isError && events.length === 0 && (
               <p className="text-text-muted py-12 text-center">
                 선택한 날짜에 등록된 일정이 없습니다.
               </p>
             )}
 
-            {!isLoading && !errorMessage && events.length > 0 && (
+            {!isLoading && !isError && events.length > 0 && (
               <div className="overflow-x-auto pb-2">
                 <div
                   className="grid min-w-[980px] grid-cols-[5.5rem_1fr] gap-4"
