@@ -1,1 +1,1 @@
-pnpm --filter festival-app/frontend lint-staged
+cd festival-app/frontend && pnpm lint-staged
