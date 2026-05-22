@@ -156,6 +156,7 @@ export function BoothDirectory() {
                   <span className="border-line-subtle border bg-white/10 py-2">운동장</span>
                 </div>
                 <div
+                  aria-label={`${selectedBooth.name} 위치`}
                   className="bg-brand-mint absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 border-2 border-white shadow-md"
                   style={{
                     left: `${selectedBooth.location.mapX}%`,
