@@ -19,7 +19,7 @@ export default function MapLocationList({
   onSelectLocation,
 }: MapLocationListProps) {
   return (
-    <aside className="flex max-h-[38rem] flex-col rounded-2xl border border-white/12 bg-white/[0.07] p-3 shadow-2xl shadow-black/10 sm:p-4 lg:max-h-[41rem]">
+    <aside className="flex max-h-152 flex-col rounded-2xl border border-white/12 bg-white/[0.07] p-3 shadow-2xl shadow-black/10 sm:p-4 lg:max-h-164">
       <div className="shrink-0 border-b border-white/12 pb-3">
         <h2 className="text-xl font-black">위치 목록</h2>
         <p className="typo-caption text-text-muted mt-1">
@@ -79,9 +79,9 @@ function MapLocationListItem({
     <button
       type="button"
       onClick={() => onSelectLocation(location.id)}
-      className={`w-full cursor-pointer rounded-xl border p-3 text-left transition hover:bg-white/[0.08] focus:outline-none ${
+      className={`w-full cursor-pointer rounded-xl border p-3 text-left transition hover:bg-white/8 focus:outline-none ${
         isSelected
-          ? "border-white/35 bg-white/[0.09] shadow-lg shadow-black/15"
+          ? "border-white/35 bg-white/9 shadow-lg shadow-black/15"
           : "border-white/10 bg-black/10"
       }`}
     >

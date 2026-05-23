@@ -10,7 +10,7 @@ export default function LoginPage() {
         style={{ backgroundImage: "url('/festival-mascot-hero.png')" }}
         aria-hidden="true"
       />
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgb(16_25_54_/_0.98)_0%,rgb(16_25_54_/_0.9)_48%,rgb(16_25_54_/_0.72)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgb(16_25_54/0.98)_0%,rgb(16_25_54/0.9)_48%,rgb(16_25_54/0.72)_100%)]" />
 
       <SiteHeader actionHref="/" actionLabel="홈으로" />
 
@@ -30,7 +30,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="mx-auto w-full max-w-md rounded-[2rem] border border-white/14 bg-white/[0.11] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.24)] backdrop-blur-xl sm:p-7">
+        <div className="mx-auto w-full max-w-md rounded-4xl border border-white/14 bg-white/11 p-5 shadow-[0_30px_90px_rgba(0,0,0,0.24)] backdrop-blur-xl sm:p-7">
           <div>
             <p className="text-brand-coral-soft text-sm font-black">LOGIN</p>
             <h2 className="mt-2 text-3xl font-black">다시 만나서 반가워요</h2>

@@ -29,14 +29,14 @@ export default function MapGuidePanel({
       </div>
 
       <div className="mt-4 overflow-x-auto pb-1">
-        <div className="relative min-w-[680px] overflow-hidden rounded-xl border border-white/12 bg-black/20">
+        <div className="relative min-w-170 overflow-hidden rounded-xl border border-white/12 bg-black/20">
           <Image
             src="/campus-map-guide.svg"
             alt="홍익대학교 축제 안내도"
             width={1200}
             height={760}
             priority
-            className="block aspect-[1200/760] max-h-[34rem] w-full object-contain select-none"
+            className="block aspect-1200/760 max-h-136 w-full object-contain select-none"
           />
 
           {!isLoading &&

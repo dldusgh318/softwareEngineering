@@ -10,12 +10,12 @@ export default function SignupPage() {
         style={{ backgroundImage: "url('/festival-mascot-hero.png')" }}
         aria-hidden="true"
       />
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgb(16_25_54_/_0.98)_0%,rgb(16_25_54_/_0.9)_52%,rgb(16_25_54_/_0.74)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgb(16_25_54/0.98)_0%,rgb(16_25_54/0.9)_52%,rgb(16_25_54/0.74)_100%)]" />
 
       <SiteHeader actionHref="/login" actionLabel="로그인" />
 
       <section className="relative z-10 mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-7xl items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mx-auto w-full max-w-md rounded-[2rem] border border-white/14 bg-white/[0.11] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.24)] backdrop-blur-xl sm:p-7">
+        <div className="mx-auto w-full max-w-md rounded-4xl border border-white/14 bg-white/11 p-5 shadow-[0_30px_90px_rgba(0,0,0,0.24)] backdrop-blur-xl sm:p-7">
           <div>
             <p className="text-brand-coral-soft text-sm font-black">SIGN UP</p>
             <h1 className="mt-2 text-3xl font-black">회원가입</h1>

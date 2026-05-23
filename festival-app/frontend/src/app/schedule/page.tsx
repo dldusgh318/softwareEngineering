@@ -110,7 +110,7 @@ export default function SchedulePage() {
             {!isLoading && !isError && events.length > 0 && (
               <div className="overflow-x-auto pb-2">
                 <div
-                  className="grid min-w-[980px] grid-cols-[5.5rem_1fr] gap-4"
+                  className="grid min-w-245 grid-cols-[5.5rem_1fr] gap-4"
                   style={{ height: timetableHeight }}
                 >
                   <div className="relative">
@@ -144,10 +144,7 @@ export default function SchedulePage() {
                       aria-hidden="true"
                     >
                       {Array.from({ length: laneCount }).map((_, index) => (
-                        <div
-                          key={index}
-                          className="border-l border-white/[0.06] first:border-l-0"
-                        />
+                        <div key={index} className="border-l border-white/6 first:border-l-0" />
                       ))}
                     </div>
 
@@ -163,7 +160,7 @@ export default function SchedulePage() {
                       return (
                         <article
                           key={event.id}
-                          className={`absolute overflow-hidden rounded-xl border border-l-4 border-white/14 bg-white/[0.13] p-3 shadow-lg shadow-black/15 backdrop-blur ${accentClassName}`}
+                          className={`absolute overflow-hidden rounded-xl border border-l-4 border-white/14 bg-white/13 p-3 shadow-lg shadow-black/15 backdrop-blur ${accentClassName}`}
                           style={{
                             top: event.top,
                             left: `calc(${event.lane * width}% + 0.35rem)`,
