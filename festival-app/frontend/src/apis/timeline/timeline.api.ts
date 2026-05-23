@@ -6,6 +6,11 @@ type GetTimelineParams = {
   signal?: AbortSignal;
 };
 
+type GetTimelineEventParams = {
+  id: number;
+  signal?: AbortSignal;
+};
+
 // 선택한 날짜의 타임라인 목록을 조회합니다.
 export function getTimeline({ date, signal }: GetTimelineParams) {
   return apiClient
@@ -14,4 +19,9 @@ export function getTimeline({ date, signal }: GetTimelineParams) {
       signal,
     })
     .json<TimelineEvent[]>();
+}
+
+// 선택한 행사 상세 정보를 조회합니다.
+export function getTimelineEvent({ id, signal }: GetTimelineEventParams) {
+  return apiClient.get(`api/timeline/${id}`, { signal }).json<TimelineEvent>();
 }

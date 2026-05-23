@@ -8,4 +8,6 @@ public record TimelineEventResponse(
     String category,
     LocalDateTime startsAt,
     LocalDateTime endsAt,
-    String location) {}
+    String location,
+    String description,
+    String status) {}
