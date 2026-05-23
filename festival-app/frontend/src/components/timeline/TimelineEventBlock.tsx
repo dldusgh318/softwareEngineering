@@ -55,8 +55,10 @@ export default function TimelineEventBlock({
       <p className="text-brand-yellow-soft mt-2 text-xs leading-5 font-black whitespace-normal">
         {timeRange}
       </p>
-      <h3 className="mt-2 truncate text-base font-black">{event.title}</h3>
-      <p className="text-text-muted mt-1 truncate text-xs font-bold">{event.location}</p>
+      <h3 className="mt-2 w-full min-w-0 truncate text-base font-black">{event.title}</h3>
+      <p className="text-text-muted mt-1 w-full min-w-0 truncate text-xs font-bold">
+        {event.location}
+      </p>
     </button>
   );
 }
