@@ -16,11 +16,11 @@ public record MapLocationResponse(
     return new MapLocationResponse(
         location.id(),
         location.name(),
-        location.category(),
-        location.x(),
-        location.y(),
-        location.width(),
-        location.height(),
+        location.category().name(),
+        location.area().x(),
+        location.area().y(),
+        location.area().width(),
+        location.area().height(),
         location.description());
   }
 }
