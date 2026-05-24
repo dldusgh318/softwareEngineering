@@ -66,6 +66,16 @@ class BoothReservationControllerTest {
   private BoothReservationResponse reservationResponse(String id, String applicantId) {
     LocalDateTime now = LocalDateTime.of(2026, 5, 24, 10, 0);
     return new BoothReservationResponse(
-        id, "booth-1", applicantId, "홍길동", 2, "PENDING_APPROVAL", "관리자 승인 대기", now, now);
+        id,
+        "booth-1",
+        applicantId,
+        "홍길동",
+        2,
+        "PENDING_APPROVAL",
+        "관리자 승인 대기",
+        null,
+        List.of(),
+        now,
+        now);
   }
 }

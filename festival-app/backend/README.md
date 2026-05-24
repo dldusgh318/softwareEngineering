@@ -99,12 +99,70 @@ Response Example:
 ]
 ```
 
+### 관리자 예약 신청 목록 조회
+
+```http
+GET /api/admin/booth-reservations/pending
+```
+
+관리자가 승인해야 하는 `PENDING_APPROVAL` 상태의 예약 신청 목록을 반환합니다.
+
+### 관리자 예약 승인 및 QR 발급
+
+```http
+POST /api/admin/booth-reservations/{reservationId}/approve
+```
+
+Request Example:
+
+```json
+{
+  "approverId": "admin-1",
+  "approverName": "관리자"
+}
+```
+
+승인 가능한 예약은 `PENDING_APPROVAL` 상태의 예약뿐입니다. 승인 요청이 들어오면 Saga는 다음 순서로 진행됩니다.
+
+```text
+PENDING_APPROVAL → APPROVED → QR 발급 → RESERVED
+```
+
+Response Example:
+
+```json
+{
+  "id": "reservation-1",
+  "boothId": "booth-1",
+  "applicantId": "user-1",
+  "applicantName": "홍길동",
+  "requestedTables": 2,
+  "status": "RESERVED",
+  "statusDescription": "QR 발급 완료",
+  "qrCode": "QR-reservation-1",
+  "sagaLogs": [
+    {
+      "step": "APPROVED",
+      "message": "관리자가 예약 신청을 승인했습니다.",
+      "createdAt": "2026-05-24T10:00:00"
+    },
+    {
+      "step": "QR_ISSUED",
+      "message": "QR 발급에 성공해 예약 완료 상태로 전환했습니다.",
+      "createdAt": "2026-05-24T10:00:00"
+    }
+  ],
+  "createdAt": "2026-05-24T09:50:00",
+  "updatedAt": "2026-05-24T10:00:00"
+}
+```
+
 ## 부스 예약 Saga 기록
 
 이슈 #6은 부스 예약 Saga의 시작점입니다.
 
 ```text
-부스 예약 신청 → PENDING_APPROVAL 저장 → 관리자 승인 → QR 발급 → 예약 완료/체크인
+부스 예약 신청 → PENDING_APPROVAL 저장 → 관리자 승인 → APPROVED → QR 발급 → RESERVED → 체크인
 ```
 
 현재 단계에서 보장하는 규칙:
@@ -114,6 +172,22 @@ Response Example:
 - 신청 테이블 수는 1개 이상이어야 합니다.
 - 이미 활성 예약으로 점유된 테이블 수를 제외하고, 남은 테이블 수를 초과해 신청할 수 없습니다.
 - 사용자별 예약 상태 조회 API로 Saga 시작 상태를 확인할 수 있습니다.
+- 관리자는 승인 대기 예약 목록을 조회하고, 승인 API를 통해 QR 발급까지 이어지는 Saga를 시작할 수 있습니다.
+- QR 발급이 성공하면 예약 상태는 `RESERVED`로 전환되고, 승인 응답의 `sagaLogs`로 진행 단계를 확인할 수 있습니다.
+
+## 이슈 #7 외부 행위자 개입 기록
+
+관리자 승인은 시스템 내부 자동 흐름이 아니라 외부 행위자의 명시적인 판단이 필요한 단계입니다.
+
+이번 구현에서는 외부 행위자 개입을 다음처럼 처리했습니다.
+
+- 관리자가 처리할 대상은 `GET /api/admin/booth-reservations/pending`으로 분리했습니다.
+- 승인 행위는 `POST /api/admin/booth-reservations/{reservationId}/approve`로 명시했습니다.
+- 승인과 QR 발급은 하나의 트랜잭션으로 처리합니다.
+- 서비스는 승인 요청을 받은 뒤 예약 상태를 `APPROVED`로 변경하고, QR 발급 성공 후 `RESERVED`로 변경합니다.
+- QR 발급은 `QrCodeIssuer` 인터페이스로 분리해 승인 Saga와 QR 생성 방식을 느슨하게 연결했습니다.
+- QR 발급 성공 후 최종 사용자 예약 상태는 `RESERVED`가 됩니다.
+- 승인 응답의 `sagaLogs`에 `APPROVED`, `QR_ISSUED` 단계를 담아 Saga 진행 상태를 확인할 수 있게 했습니다.
 
 ## 이슈 #6 테스트 범위
 
@@ -132,6 +206,19 @@ Response Example:
   - 예약 저장, 사용자별 조회, 활성 예약 수량 집계, 취소 예약 제외 규칙을 검증합니다.
 - `BoothReservationStatusTest`
   - 예약 상태 설명 필드가 함께 제공되는지 검증합니다.
+
+### Backend - 이슈 #7
+
+- `AdminBoothReservationControllerTest`
+  - 관리자 예약 신청 목록 조회 API가 승인 대기 예약을 반환하는지 검증합니다.
+  - 관리자 승인 API가 QR 코드가 포함된 `RESERVED` 예약을 반환하는지 검증합니다.
+- `BoothReservationApprovalServiceTest`
+  - 승인 대기 예약 목록만 조회되는지 검증합니다.
+  - `PENDING_APPROVAL → APPROVED → QR 발급 → RESERVED` 정상 흐름을 검증합니다.
+  - 승인 대상이 아닌 예약 승인 시 `409 Conflict`가 발생하는지 검증합니다.
+  - 존재하지 않는 예약 승인 시 `404 Not Found`가 발생하는지 검증합니다.
+- `BoothReservationRepositoryTest`
+  - 상태별 예약 조회와 예약 업데이트가 정상 동작하는지 검증합니다.
 
 ### Frontend
 

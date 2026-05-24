@@ -11,4 +11,10 @@ class BoothReservationStatusTest {
     assertThat(BoothReservationStatus.PENDING_APPROVAL.getDescription())
         .isEqualTo("관리자 승인 대기");
   }
+
+  @Test
+  void reservedHasDescription() {
+    assertThat(BoothReservationStatus.RESERVED.getDescription())
+        .isEqualTo("QR 발급 완료");
+  }
 }

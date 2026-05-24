@@ -117,6 +117,6 @@ class BoothReservationServiceTest {
       BoothReservationStatus status) {
     LocalDateTime now = LocalDateTime.of(2026, 5, 24, 10, 0);
     return new BoothReservation(
-        id, boothId, applicantId, "홍길동", requestedTables, status, now, now);
+        id, boothId, applicantId, "홍길동", requestedTables, status, null, now, now);
   }
 }
