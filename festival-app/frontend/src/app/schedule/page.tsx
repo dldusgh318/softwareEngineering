@@ -109,7 +109,7 @@ export default function SchedulePage() {
             {!isLoading && !isError && events.length > 0 && (
               <div className="overflow-x-auto pb-2">
                 <div
-                  className="grid min-w-[980px] grid-cols-[5.5rem_1fr] gap-4"
+                  className="grid min-w-245 grid-cols-[5.5rem_1fr] gap-4"
                   style={{ height: timetableHeight }}
                 >
                   <div className="relative">
@@ -143,10 +143,7 @@ export default function SchedulePage() {
                       aria-hidden="true"
                     >
                       {Array.from({ length: laneCount }).map((_, index) => (
-                        <div
-                          key={index}
-                          className="border-l border-white/[0.06] first:border-l-0"
-                        />
+                        <div key={index} className="border-l border-white/6 first:border-l-0" />
                       ))}
                     </div>
 

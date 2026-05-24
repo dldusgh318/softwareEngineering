@@ -38,16 +38,16 @@ export default function Home() {
     <main className="bg-brand-navy text-text-primary min-h-screen">
       <SiteHeader actionHref="/login" actionLabel="로그인" actionVariant="filled" fixed showNav />
 
-      <section className="relative min-h-[760px] overflow-hidden pt-16 lg:min-h-[820px] lg:pt-20">
+      <section className="relative min-h-190 overflow-hidden pt-16 lg:min-h-205 lg:pt-20">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url('/festival-mascot-hero.png')" }}
           aria-hidden="true"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgb(16_25_54_/_0.96)_0%,rgb(16_25_54_/_0.84)_34%,rgb(16_25_54_/_0.38)_68%,rgb(16_25_54_/_0.08)_100%)]" />
-        <div className="from-brand-navy absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t to-transparent" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgb(16_25_54/0.96)_0%,rgb(16_25_54/0.84)_34%,rgb(16_25_54/0.38)_68%,rgb(16_25_54/0.08)_100%)]" />
+        <div className="from-brand-navy absolute inset-x-0 bottom-0 h-24 bg-linear-to-t to-transparent" />
 
-        <div className="relative mx-auto flex min-h-[680px] w-full max-w-7xl flex-col justify-center px-4 py-16 sm:px-6 lg:min-h-[740px] lg:px-8">
+        <div className="relative mx-auto flex min-h-170 w-full max-w-7xl flex-col justify-center px-4 py-16 sm:px-6 lg:min-h-185 lg:px-8">
           <div className="max-w-3xl">
             <p className="typo-caption text-brand-cream mb-5 inline-flex rounded-full border border-white/16 bg-white/10 px-4 py-2 font-bold backdrop-blur">
               와우와 함께 즐기는 축제 플랫폼

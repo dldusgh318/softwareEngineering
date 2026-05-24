@@ -17,7 +17,10 @@ const skeletonBlocks = [
 export default function TimelineLoadingSkeleton({ timetableHeight }: TimelineLoadingSkeletonProps) {
   return (
     <div className="overflow-x-auto pb-2" aria-label="일정 로딩 중">
-      <div className="grid min-w-[980px] grid-cols-[5.5rem_1fr] gap-4" style={{ height: timetableHeight }}>
+      <div
+        className="grid min-w-245 grid-cols-[5.5rem_1fr] gap-4"
+        style={{ height: timetableHeight }}
+      >
         <div className="relative">
           {hourMarks.map((hour) => (
             <div
@@ -39,12 +42,12 @@ export default function TimelineLoadingSkeleton({ timetableHeight }: TimelineLoa
             />
           ))}
 
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)] animate-pulse" />
+          <div className="absolute inset-0 animate-pulse bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)]" />
 
           {skeletonBlocks.map((block, index) => (
             <div
               key={index}
-              className="absolute rounded-xl border border-white/10 bg-white/[0.08] p-3"
+              className="absolute rounded-xl border border-white/10 bg-white/8 p-3"
               style={{
                 top: block.top,
                 left: block.left,
@@ -52,9 +55,9 @@ export default function TimelineLoadingSkeleton({ timetableHeight }: TimelineLoa
                 height: block.height,
               }}
             >
-              <div className="bg-white/14 h-4 w-16 rounded-full" />
-              <div className="bg-white/10 mt-3 h-3 w-24 rounded-full" />
-              <div className="bg-white/10 mt-3 h-4 w-32 rounded-full" />
+              <div className="h-4 w-16 rounded-full bg-white/14" />
+              <div className="mt-3 h-3 w-24 rounded-full bg-white/10" />
+              <div className="mt-3 h-4 w-32 rounded-full bg-white/10" />
             </div>
           ))}
         </div>

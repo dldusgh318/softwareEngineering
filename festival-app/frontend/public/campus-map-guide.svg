@@ -1,0 +1,77 @@
+<svg width="1200" height="760" viewBox="0 0 1200 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="760" rx="28" fill="#4E3F45"/>
+  <rect width="1200" height="760" rx="28" fill="#2B2130" opacity="0.42"/>
+
+  <g fill="#77666D" opacity="0.72">
+    <path d="M118 42H425L326 175L94 151L118 42Z"/>
+    <rect x="505" y="18" width="145" height="54" rx="4"/>
+    <rect x="684" y="18" width="112" height="54" rx="4"/>
+    <rect x="840" y="40" width="205" height="80" rx="4"/>
+    <rect x="793" y="156" width="210" height="78" rx="4"/>
+    <rect x="1006" y="268" width="126" height="126" rx="4"/>
+    <rect x="828" y="590" width="150" height="118" rx="4"/>
+    <rect x="345" y="560" width="175" height="130" rx="4"/>
+    <rect x="88" y="498" width="148" height="126" rx="4"/>
+  </g>
+
+  <g fill="#A19097" opacity="0.58" font-family="Arial, sans-serif" font-size="42" font-weight="900">
+    <text x="284" y="112">K</text>
+    <text x="555" y="58">Q</text>
+    <text x="730" y="58">F</text>
+    <text x="894" y="94">MH</text>
+    <text x="1052" y="144">B</text>
+    <text x="855" y="210">Z1</text>
+    <text x="1045" y="340">S</text>
+    <text x="866" y="670">Z4</text>
+    <text x="405" y="640">M</text>
+    <text x="150" y="572">R</text>
+    <text x="1120" y="482">T</text>
+  </g>
+
+  <path d="M100 253L330 410H696" stroke="#1A1146" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M100 253L330 410H696" stroke="#F2EEFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M252 318L350 374L333 288" stroke="#F2EEFF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M716 152L996 188L1004 420L625 500" stroke="#2A1553" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M716 152L996 188L1004 420L625 500" stroke="#F7D6FF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M930 222V344" stroke="#F7D6FF" stroke-width="12" stroke-dasharray="18 22" opacity="0.58"/>
+
+  <path d="M362 132L577 176L502 318H344L286 263C299 196 326 154 362 132Z" fill="#FF9DA8"/>
+  <rect x="485" y="246" width="360" height="192" rx="8" fill="#79F58C"/>
+  <rect x="908" y="282" width="184" height="184" rx="8" fill="#CE76F4"/>
+  <rect x="330" y="555" width="430" height="138" rx="8" fill="#C90491"/>
+  <rect x="764" y="555" width="170" height="138" rx="8" fill="#0600F7"/>
+  <rect x="255" y="135" width="260" height="32" rx="5" fill="#7AF4EA"/>
+  <rect x="36" y="420" width="122" height="40" rx="5" transform="rotate(29 36 420)" fill="#FFF76E"/>
+  <rect x="830" y="232" width="124" height="82" rx="8" fill="#C9C9C9" opacity="0.85"/>
+
+  <circle cx="642" cy="342" r="76" stroke="#D9FFE4" stroke-width="5" opacity="0.28"/>
+  <line x1="642" y1="246" x2="642" y2="438" stroke="#D9FFE4" stroke-width="4" opacity="0.2"/>
+  <line x1="485" y1="342" x2="845" y2="342" stroke="#D9FFE4" stroke-width="4" opacity="0.2"/>
+
+  <g font-family="Arial, sans-serif" font-weight="900" text-anchor="middle" dominant-baseline="middle">
+    <rect x="352" y="150" width="140" height="54" rx="14" fill="white" opacity="0.95"/>
+    <text x="422" y="177" fill="#241C2A" font-size="23">메인무대</text>
+
+    <rect x="704" y="256" width="218" height="54" rx="14" fill="white" opacity="0.95"/>
+    <text x="813" y="283" fill="#241C2A" font-size="21">낮/밤 주점 부스</text>
+
+    <rect x="972" y="410" width="154" height="76" rx="14" fill="white" opacity="0.95"/>
+    <text x="1049" y="441" fill="#241C2A" font-size="23">WOW DJ</text>
+    <text x="1049" y="471" fill="#241C2A" font-size="23">Festival</text>
+
+    <rect x="45" y="363" width="130" height="50" rx="14" fill="white" opacity="0.95"/>
+    <text x="110" y="388" fill="#241C2A" font-size="21">플리마켓</text>
+
+    <rect x="708" y="54" width="180" height="52" rx="14" fill="white" opacity="0.95"/>
+    <text x="798" y="80" fill="#241C2A" font-size="21">체험형 부스</text>
+
+    <rect x="790" y="202" width="122" height="46" rx="13" fill="white" opacity="0.95"/>
+    <text x="851" y="225" fill="#241C2A" font-size="20">화장실</text>
+
+    <rect x="780" y="322" width="138" height="54" rx="14" fill="#FF2A2A"/>
+    <text x="849" y="349" fill="white" font-size="23">입장 부스</text>
+
+    <text x="545" y="624" fill="white" font-size="36">무대존</text>
+    <text x="849" y="624" fill="white" font-size="30">프로모션존</text>
+  </g>
+</svg>
