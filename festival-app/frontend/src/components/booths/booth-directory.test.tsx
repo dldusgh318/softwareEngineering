@@ -217,6 +217,23 @@ describe("BoothDirectory", () => {
     ).toBeInTheDocument();
     expect(screen.queryByText("신청 테이블 2개")).not.toBeInTheDocument();
   });
+
+  it("shows issued QR code for reserved reservation", async () => {
+    setLoggedInApplicant();
+    mockedGetBooths.mockResolvedValue(booths);
+    mockedGetBoothReservationsByApplicant.mockResolvedValue([
+      reservationApplication({
+        status: "RESERVED",
+        statusDescription: "QR 발급 완료",
+        qrCode: "QR-reservation-1",
+      }),
+    ]);
+
+    render(<BoothDirectory />);
+
+    expect(await screen.findAllByText("QR-reservation-1")).toHaveLength(2);
+    expect(screen.getByText("예약 QR")).toBeInTheDocument();
+  });
 });
 
 function reservationApplication(
@@ -230,6 +247,8 @@ function reservationApplication(
     requestedTables: 2,
     status: "PENDING_APPROVAL",
     statusDescription: "관리자 승인 대기",
+    qrCode: null,
+    sagaLogs: [],
     createdAt: "2026-05-24T10:00:00",
     updatedAt: "2026-05-24T10:00:00",
     ...overrides,

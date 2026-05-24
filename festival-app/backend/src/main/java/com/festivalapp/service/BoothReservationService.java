@@ -8,6 +8,7 @@ import com.festivalapp.dto.BoothReservationResponse;
 import com.festivalapp.repository.booth.BoothRepository;
 import com.festivalapp.repository.booth.reservation.BoothReservationRepository;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

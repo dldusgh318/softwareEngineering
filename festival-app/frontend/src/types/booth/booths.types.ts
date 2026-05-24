@@ -39,8 +39,21 @@ export type BoothReservationApplication = {
   requestedTables: number;
   status: BoothReservationStatus;
   statusDescription: string;
+  qrCode: string | null;
+  sagaLogs: BoothReservationSagaLog[];
   createdAt: string;
   updatedAt: string;
+};
+
+export type BoothReservationSagaLog = {
+  step: string;
+  message: string;
+  createdAt: string;
+};
+
+export type BoothReservationApprovalRequest = {
+  approverId: string;
+  approverName: string;
 };
 
 export type QrFailureReservationStatus = BoothReservationStatus | "QR_FAILED" | "RESERVED";
