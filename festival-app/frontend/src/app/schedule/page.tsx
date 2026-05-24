@@ -3,13 +3,13 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { getTimeline } from "@/apis/timeline/timeline.api";
+import { getTimeline, getTimelineEvent } from "@/apis/timeline/timeline.api";
 import SiteHeader from "@/components/SiteHeader";
+import TimelineDateTabs from "@/components/timeline/TimelineDateTabs";
+import TimelineEventBlock from "@/components/timeline/TimelineEventBlock";
+import TimelineEventDetailModal from "@/components/timeline/TimelineEventDetailModal";
 import TimelineLoadingSkeleton from "@/components/timeline/TimelineLoadingSkeleton";
 import {
-  categoryAccentClassNames,
-  categoryClassNames,
-  categoryLabels,
   festivalDates,
   hourHeight,
   hourMarks,
@@ -20,12 +20,12 @@ import type { TimelineEvent } from "@/types/timeline/timeline.types";
 import {
   buildTimelineBlocks,
   formatHourLabel,
-  formatTimeRange,
   getHourMarkTop,
 } from "@/utils/timeline/timeline.utils";
 
 export default function SchedulePage() {
   const [selectedDate, setSelectedDate] = useState(festivalDates[0].value);
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
   const {
     data: events = [],
     error,
@@ -34,6 +34,16 @@ export default function SchedulePage() {
   } = useQuery<TimelineEvent[]>({
     queryKey: ["timeline", selectedDate],
     queryFn: ({ signal }) => getTimeline({ date: selectedDate, signal }),
+  });
+  const {
+    data: selectedEvent,
+    error: selectedEventError,
+    isError: isSelectedEventError,
+    isFetching: isSelectedEventFetching,
+  } = useQuery<TimelineEvent>({
+    queryKey: ["timeline-event", selectedEventId],
+    queryFn: ({ signal }) => getTimelineEvent({ id: selectedEventId as number, signal }),
+    enabled: selectedEventId !== null,
   });
 
   const selectedDateLabel = useMemo(
@@ -44,6 +54,11 @@ export default function SchedulePage() {
     () => buildTimelineBlocks(events, selectedDate),
     [events, selectedDate],
   );
+  const selectedEventPreview = useMemo(
+    () => events.find((event) => event.id === selectedEventId),
+    [events, selectedEventId],
+  );
+  const eventForModal = selectedEvent ?? selectedEventPreview;
   const timetableHeight = (timetableEndHour - timetableStartHour) * hourHeight;
 
   return (
@@ -59,27 +74,11 @@ export default function SchedulePage() {
           </p>
         </div>
 
-        <div className="mt-8 grid gap-3 sm:grid-cols-3">
-          {festivalDates.map((date) => {
-            const isSelected = selectedDate === date.value;
-
-            return (
-              <button
-                key={date.value}
-                type="button"
-                onClick={() => setSelectedDate(date.value)}
-                className={`cursor-pointer rounded-2xl border px-5 py-4 text-left transition ${
-                  isSelected
-                    ? "border-brand-yellow bg-brand-yellow text-brand-navy shadow-brand-yellow/20 shadow-lg"
-                    : "border-line-subtle bg-surface-glass hover:bg-surface-glass-hover text-white"
-                }`}
-              >
-                <span className="block text-xs font-black">{date.caption}</span>
-                <span className="mt-1 block text-xl font-black">{date.label}</span>
-              </button>
-            );
-          })}
-        </div>
+        <TimelineDateTabs
+          dates={festivalDates}
+          selectedDate={selectedDate}
+          onSelectDate={setSelectedDate}
+        />
 
         <section className="mt-8 rounded-2xl border border-white/12 bg-white/[0.07] p-4 shadow-2xl shadow-black/10 sm:p-6">
           <div className="flex flex-col gap-2 border-b border-white/12 pb-5 sm:flex-row sm:items-end sm:justify-between">
@@ -151,43 +150,14 @@ export default function SchedulePage() {
                       ))}
                     </div>
 
-                    {blocks.map((event) => {
-                      const categoryClassName =
-                        categoryClassNames[event.category] ??
-                        "border-white/20 bg-white/10 text-white/76";
-                      const accentClassName =
-                        categoryAccentClassNames[event.category] ?? "border-l-white/40";
-                      const width = 100 / laneCount;
-                      const timeRange = formatTimeRange(event);
-
-                      return (
-                        <article
-                          key={event.id}
-                          className={`absolute overflow-hidden rounded-xl border border-l-4 border-white/14 bg-white/[0.13] p-3 shadow-lg shadow-black/15 backdrop-blur ${accentClassName}`}
-                          style={{
-                            top: event.top,
-                            left: `calc(${event.lane * width}% + 0.35rem)`,
-                            width: `calc(${width}% - 0.7rem)`,
-                            height: event.height,
-                          }}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-black ${categoryClassName}`}
-                            >
-                              {categoryLabels[event.category] ?? event.category}
-                            </span>
-                          </div>
-                          <p className="text-brand-yellow-soft mt-2 text-xs leading-5 font-black whitespace-normal">
-                            {timeRange}
-                          </p>
-                          <h3 className="mt-2 truncate text-base font-black">{event.title}</h3>
-                          <p className="text-text-muted mt-1 truncate text-xs font-bold">
-                            {event.location}
-                          </p>
-                        </article>
-                      );
-                    })}
+                    {blocks.map((event) => (
+                      <TimelineEventBlock
+                        key={event.id}
+                        event={event}
+                        laneCount={laneCount}
+                        onSelect={setSelectedEventId}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
@@ -195,6 +165,16 @@ export default function SchedulePage() {
           </div>
         </section>
       </section>
+
+      {selectedEventId !== null && (
+        <TimelineEventDetailModal
+          event={eventForModal}
+          error={selectedEventError instanceof Error ? selectedEventError : null}
+          isError={isSelectedEventError}
+          isFetching={isSelectedEventFetching}
+          onClose={() => setSelectedEventId(null)}
+        />
+      )}
     </main>
   );
 }

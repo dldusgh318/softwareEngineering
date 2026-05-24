@@ -1,3 +1,5 @@
+export type TimelineEventStatus = "SCHEDULED" | "ONGOING" | "ENDED";
+
 // 백엔드 타임라인 API에서 내려주는 행사 일정 데이터입니다.
 export type TimelineEvent = {
   id: number;
@@ -6,6 +8,8 @@ export type TimelineEvent = {
   startsAt: string;
   endsAt: string;
   location: string;
+  description?: string;
+  status?: TimelineEventStatus;
 };
 
 // 날짜 선택 탭에 필요한 표시 데이터입니다.

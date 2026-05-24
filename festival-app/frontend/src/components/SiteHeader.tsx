@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 type NavItem = {
   href: string;
   label: string;
+  activeClassName: string;
   hoverClassName: string;
 };
 
@@ -18,21 +22,25 @@ const navItems: NavItem[] = [
   {
     href: "/performances",
     label: "공연",
+    activeClassName: "text-brand-coral-soft",
     hoverClassName: "hover:text-brand-coral-soft",
   },
   {
     href: "/booths",
     label: "부스",
+    activeClassName: "text-brand-mint-soft",
     hoverClassName: "hover:text-brand-mint-soft",
   },
   {
     href: "/schedule",
     label: "일정",
+    activeClassName: "text-brand-yellow-soft",
     hoverClassName: "hover:text-brand-yellow-soft",
   },
   {
     href: "/map",
     label: "안내도",
+    activeClassName: "text-brand-blue-soft",
     hoverClassName: "hover:text-brand-blue-soft",
   },
 ];
@@ -44,6 +52,8 @@ export default function SiteHeader({
   showNav = false,
   actionVariant = "ghost",
 }: SiteHeaderProps) {
+  const pathname = usePathname();
+
   return (
     <header
       className={
@@ -71,15 +81,22 @@ export default function SiteHeader({
 
         {showNav && (
           <nav className="hidden items-center gap-7 text-sm font-semibold text-white/72 md:flex">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                className={`${item.hoverClassName} transition`}
-                href={item.href}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+              return (
+                <Link
+                  key={item.href}
+                  className={`${item.hoverClassName} ${
+                    isActive ? item.activeClassName : ""
+                  } transition`}
+                  href={item.href}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
         )}
 

@@ -52,6 +52,20 @@ export const categoryAccentClassNames: Record<string, string> = {
   TOUR: "border-l-white/40",
 };
 
+// 행사 진행 상태 코드를 화면에 보여줄 한글 라벨로 변환합니다.
+export const statusLabels = {
+  SCHEDULED: "예정",
+  ONGOING: "진행 중",
+  ENDED: "종료",
+} as const;
+
+// 행사 진행 상태 배지의 색상 스타일을 관리합니다.
+export const statusClassNames = {
+  SCHEDULED: "border-brand-blue/30 bg-brand-blue/18 text-brand-blue-soft",
+  ONGOING: "border-brand-mint/30 bg-brand-mint/18 text-brand-mint-soft",
+  ENDED: "border-white/18 bg-white/10 text-text-muted",
+} as const;
+
 export const timetableStartHour = 11;
 export const timetableEndHour = 25;
 export const hourHeight = 92;

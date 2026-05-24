@@ -21,7 +21,8 @@ class TimelineRepositoryTest {
             "DJ",
             LocalDateTime.of(2026, 5, 13, 19, 0),
             LocalDateTime.of(2026, 5, 14, 0, 0),
-            "운동장");
+            "운동장",
+            "야간 DJ 공연입니다.");
     TimelineEvent selectedDayEvent =
         new TimelineEvent(
             2L,
@@ -29,7 +30,8 @@ class TimelineRepositoryTest {
             "EXPERIENCE",
             LocalDateTime.of(2026, 5, 14, 11, 0),
             LocalDateTime.of(2026, 5, 14, 17, 0),
-            "와우관 오른쪽, Q동 앞");
+            "와우관 오른쪽, Q동 앞",
+            "체험형 프로그램입니다.");
     TimelineEvent nextDayEvent =
         new TimelineEvent(
             3L,
@@ -37,7 +39,8 @@ class TimelineRepositoryTest {
             "STAGE",
             LocalDateTime.of(2026, 5, 15, 17, 0),
             LocalDateTime.of(2026, 5, 15, 19, 0),
-            "메인무대");
+            "메인무대",
+            "다음날 행사입니다.");
     TimelineRepository timelineRepository =
         new TimelineRepository(() -> List.of(previousDayEvent, selectedDayEvent, nextDayEvent));
 
@@ -45,5 +48,22 @@ class TimelineRepositoryTest {
 
     assertThat(timelineEvents).containsExactly(previousDayEvent, selectedDayEvent);
     assertThat(timelineRepository.findByDate(day1)).contains(previousDayEvent);
+  }
+
+  @Test
+  void findByIdReturnsMatchingEvent() {
+    TimelineEvent event =
+        new TimelineEvent(
+            1L,
+            "체험형 부스",
+            "EXPERIENCE",
+            LocalDateTime.of(2026, 5, 14, 11, 0),
+            LocalDateTime.of(2026, 5, 14, 17, 0),
+            "와우관 오른쪽, Q동 앞",
+            "체험형 프로그램입니다.");
+    TimelineRepository timelineRepository = new TimelineRepository(() -> List.of(event));
+
+    assertThat(timelineRepository.findById(1L)).contains(event);
+    assertThat(timelineRepository.findById(999L)).isEmpty();
   }
 }

@@ -5,6 +5,7 @@ import com.festivalapp.repository.timeline.datasource.TimelineDataSource;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -22,6 +23,12 @@ public class TimelineRepository {
     return timelineDataSource.findAll().stream()
         .filter(event -> overlapsDate(event, date))
         .toList();
+  }
+
+  public Optional<TimelineEvent> findById(Long timelineId) {
+    return timelineDataSource.findAll().stream()
+        .filter(event -> event.id().equals(timelineId))
+        .findFirst();
   }
 
   private boolean overlapsDate(TimelineEvent event, LocalDate date) {
