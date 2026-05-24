@@ -12,7 +12,9 @@
     "format": "prettier . --write",
     "lint-staged": "lint-staged",
     "format:check": "prettier . --check",
-    "prepare": "cd ../.. && husky"
+    "prepare": "cd ../.. && husky",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.100.11",
@@ -23,6 +25,9 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -30,11 +35,13 @@
     "eslint-config-next": "16.2.6",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "husky": "^9.1.7",
+    "jsdom": "^26.1.0",
     "lint-staged": "^16.2.7",
     "prettier": "^3.7.4",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.7"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [
