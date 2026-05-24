@@ -6,7 +6,7 @@ import type {
   BoothReservation,
   BoothReservationStatus,
   QrFailureRollbackResponse,
-} from "@/types/booth";
+} from "@/types/booths.types";
 
 const statusLabels: Record<BoothReservationStatus, string> = {
   PENDING_APPROVAL: "승인 대기",

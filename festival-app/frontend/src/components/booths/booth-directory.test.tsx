@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getBooths } from "@/apis/booths/booth.api";
 import { BoothDirectory } from "@/components/booths/booth-directory";
-import type { Booth } from "@/types/booth";
+import type { Booth } from "@/types/booths.types";
 
 vi.mock("@/apis/booths/booth.api", () => ({
   getBooths: vi.fn(),

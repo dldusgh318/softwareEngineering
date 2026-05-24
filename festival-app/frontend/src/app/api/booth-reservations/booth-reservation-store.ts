@@ -1,48 +1,15 @@
-import type { BoothReservation, BoothReservationStatus, CompensationLog } from "@/types/booth";
-
-const now = new Date("2026-05-20T10:00:00+09:00").toISOString();
-
-const initialReservations: BoothReservation[] = [
-  {
-    id: "booth-reservation-1",
-    applicantName: "홍길동",
-    boothName: "타코야끼 부스",
-    location: "학생회관 앞 A-03",
-    status: "APPROVED",
-    approvedAt: now,
-    qrCode: null,
-    qrFailureReason: null,
-    compensationLogs: [],
-  },
-  {
-    id: "booth-reservation-2",
-    applicantName: "김민지",
-    boothName: "포토카드 교환 부스",
-    location: "중앙광장 B-11",
-    status: "RESERVED",
-    approvedAt: now,
-    qrCode: "QR-BOOTH-RESERVATION-2",
-    qrFailureReason: null,
-    compensationLogs: [],
-  },
-  {
-    id: "booth-reservation-3",
-    applicantName: "이서준",
-    boothName: "동아리 굿즈 부스",
-    location: "홍문관 뒤 C-07",
-    status: "PENDING_APPROVAL",
-    approvedAt: null,
-    qrCode: null,
-    qrFailureReason: null,
-    compensationLogs: [],
-  },
-];
+import { initialBoothReservations } from "@/app/api/booth-reservations/booth-reservation.mocks";
+import type {
+  BoothReservation,
+  BoothReservationStatus,
+  CompensationLog,
+} from "@/types/booths.types";
 
 const globalForBoothReservations = globalThis as typeof globalThis & {
   boothReservations?: BoothReservation[];
 };
 
-const reservations = globalForBoothReservations.boothReservations ?? initialReservations;
+const reservations = globalForBoothReservations.boothReservations ?? initialBoothReservations;
 
 globalForBoothReservations.boothReservations = reservations;
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { rollbackApprovalAfterQrFailure } from "@/lib/booth-reservations";
+import { rollbackApprovalAfterQrFailure } from "@/app/api/booth-reservations/booth-reservation-store";
 
 type RouteContext = {
   params: Promise<{
