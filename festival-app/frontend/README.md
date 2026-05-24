@@ -40,3 +40,25 @@ src/
 ├── types/                       # 공통 TypeScript 타입
 └── utils/                       # 공통 유틸 함수
 ```
+
+<br/>
+
+## Booth Reservation QR
+
+이슈 #7에서는 관리자 승인 후 발급된 QR을 사용자가 실제로 스캔할 수 있도록 처리합니다.
+
+- 관리자 화면: `/booths/admin/reservations`
+- QR 확인 화면: `/booths/reservations/[reservationId]`
+- QR payload: `http://localhost:3000/booths/reservations/{reservationId}`
+
+관리자 화면은 승인 대기 예약을 조회하고, 승인 성공 후 `RESERVED` 상태와 QR URL을 보여줍니다. QR 확인 화면은 URL의 `reservationId`로 예약 단건 조회 API를 호출해 예약 상태를 표시합니다.
+
+### Test Scope
+
+- `AdminBoothReservationApproval` 테스트
+  - 승인 대기 예약 목록 표시
+  - 승인 요청 후 QR URL과 실제 QR SVG 표시
+- `BoothReservationVerification` 테스트
+  - QR URL로 진입한 예약 확인 화면 표시
+- `BoothDirectory` 테스트
+  - 내 예약 현황에서 `RESERVED` 예약의 QR URL과 QR SVG 표시
