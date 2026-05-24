@@ -12,7 +12,7 @@ import {
   parseApplicantSnapshot,
   subscribeToApplicantChange,
 } from "@/lib/current-applicant";
-import type { Booth, BoothReservationApplication } from "@/types/booths.types";
+import type { Booth, BoothReservationApplication } from "@/types/booth/booths.types";
 
 export function BoothDirectory() {
   const applicantSnapshot = useSyncExternalStore(
@@ -34,6 +34,7 @@ export function BoothDirectory() {
     () => booths.find((booth) => booth.id === selectedBoothId),
     [booths, selectedBoothId],
   );
+  const visibleReservations = currentApplicant ? reservations : [];
 
   useEffect(() => {
     let isActive = true;
@@ -71,6 +72,7 @@ export function BoothDirectory() {
 
   useEffect(() => {
     if (!currentApplicant) {
+      queueMicrotask(() => setReservations([]));
       return;
     }
 
@@ -144,7 +146,7 @@ export function BoothDirectory() {
             booths={booths}
             isLoggedIn={currentApplicant !== null}
             onSelectBooth={setSelectedBoothId}
-            reservations={reservations}
+            reservations={visibleReservations}
           />
         </div>
 
@@ -152,7 +154,7 @@ export function BoothDirectory() {
           booth={selectedBooth}
           currentApplicant={currentApplicant}
           onReservationCreated={handleReservationCreated}
-          reservations={reservations}
+          reservations={visibleReservations}
         />
       </section>
     </main>

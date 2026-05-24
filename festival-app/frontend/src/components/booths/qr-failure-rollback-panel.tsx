@@ -8,9 +8,9 @@ import {
 } from "@/constants/booths/booth.constants";
 import type {
   BoothReservation,
-  BoothReservationStatus,
+  QrFailureReservationStatus,
   QrFailureRollbackResponse,
-} from "@/types/booths.types";
+} from "@/types/booth/booths.types";
 
 export function QrFailureRollbackPanel() {
   const [reservations, setReservations] = useState<BoothReservation[]>([]);
@@ -118,7 +118,7 @@ export function QrFailureRollbackPanel() {
             {["PENDING_APPROVAL", "APPROVED", "RESERVED"].map((status) => (
               <div key={status} className="border border-zinc-200 bg-white p-5 shadow-sm">
                 <p className="text-sm font-semibold text-zinc-500">
-                  {boothReservationStatusLabels[status as BoothReservationStatus]}
+                  {boothReservationStatusLabels[status as QrFailureReservationStatus]}
                 </p>
                 <p className="mt-3 text-3xl font-bold">
                   {reservations.filter((reservation) => reservation.status === status).length}

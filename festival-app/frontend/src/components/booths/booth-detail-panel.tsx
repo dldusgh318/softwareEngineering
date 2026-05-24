@@ -1,7 +1,7 @@
 import { BoothCampusMap } from "@/components/booths/booth-campus-map";
 import { BoothReservationApplicationPanel } from "@/components/booths/booth-reservation-application-panel";
 import type { CurrentApplicant } from "@/lib/current-applicant";
-import type { Booth, BoothReservationApplication } from "@/types/booths.types";
+import type { Booth, BoothReservationApplication } from "@/types/booth/booths.types";
 
 type BoothDetailPanelProps = {
   booth?: Booth;

@@ -3,7 +3,7 @@ import type {
   Booth,
   BoothReservationApplication,
   BoothReservationApplicationRequest,
-} from "@/types/booths.types";
+} from "@/types/booth/booths.types";
 
 export function getBooths(signal?: AbortSignal) {
   return apiClient.get("api/booths", { signal }).json<Booth[]>();

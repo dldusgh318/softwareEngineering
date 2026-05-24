@@ -4,7 +4,7 @@ import {
   boothReservationStatusLabels,
   boothReservationStatusStyles,
 } from "@/constants/booths/booth.constants";
-import type { Booth, BoothReservationApplication } from "@/types/booths.types";
+import type { Booth, BoothReservationApplication } from "@/types/booth/booths.types";
 
 type BoothReservationListPanelProps = {
   booths: Booth[];

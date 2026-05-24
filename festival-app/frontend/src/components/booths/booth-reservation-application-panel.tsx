@@ -10,7 +10,7 @@ import {
   boothReservationStatusStyles,
 } from "@/constants/booths/booth.constants";
 import type { CurrentApplicant } from "@/lib/current-applicant";
-import type { Booth, BoothReservationApplication } from "@/types/booths.types";
+import type { Booth, BoothReservationApplication } from "@/types/booth/booths.types";
 
 type BoothReservationApplicationPanelProps = {
   booth: Booth;

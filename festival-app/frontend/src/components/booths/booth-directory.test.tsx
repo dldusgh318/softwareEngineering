@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -8,7 +8,7 @@ import {
   getBooths,
 } from "@/apis/booths/booth.api";
 import { BoothDirectory } from "@/components/booths/booth-directory";
-import type { Booth, BoothReservationApplication } from "@/types/booths.types";
+import type { Booth, BoothReservationApplication } from "@/types/booth/booths.types";
 
 vi.mock("@/apis/booths/booth.api", () => ({
   createBoothReservation: vi.fn(),
@@ -197,6 +197,25 @@ describe("BoothDirectory", () => {
     await user.click(within(reservationList).getByRole("button", { name: /미니 게임 스테이션/ }));
 
     expect(screen.getByRole("heading", { name: "미니 게임 스테이션" })).toBeInTheDocument();
+  });
+
+  it("clears reservations when applicant is removed", async () => {
+    setLoggedInApplicant();
+    mockedGetBooths.mockResolvedValue(booths);
+    mockedGetBoothReservationsByApplicant.mockResolvedValue([reservationApplication()]);
+
+    render(<BoothDirectory />);
+
+    expect(await screen.findByText("신청 테이블 2개")).toBeInTheDocument();
+
+    await act(async () => {
+      window.localStorage.clear();
+    });
+
+    expect(
+      await screen.findByText("로그인 후 내 부스 예약 현황을 확인할 수 있습니다."),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("신청 테이블 2개")).not.toBeInTheDocument();
   });
 });
 
