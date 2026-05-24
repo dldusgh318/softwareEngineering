@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { useAuth } from "@/providers/AuthProvider";
+
 type NavItem = {
   href: string;
   label: string;
@@ -52,7 +54,8 @@ export default function SiteHeader({
   showNav = false,
   actionVariant = "ghost",
 }: SiteHeaderProps) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
+  const { isAuthenticated, isInitialized, logout, user } = useAuth();
 
   return (
     <header
@@ -100,16 +103,31 @@ export default function SiteHeader({
           </nav>
         )}
 
-        <Link
-          href={actionHref}
-          className={
-            actionVariant === "filled"
-              ? "bg-brand-cream text-brand-navy hover:bg-brand-coral rounded-full px-4 py-2 text-sm font-black shadow-lg shadow-black/15 transition hover:-translate-y-0.5 hover:text-white sm:px-5"
-              : "rounded-full border border-white/16 px-4 py-2 text-sm font-bold text-white/80 transition hover:bg-white/10 hover:text-white"
-          }
-        >
-          {actionLabel}
-        </Link>
+        {isInitialized && isAuthenticated ? (
+          <div className="flex items-center gap-3">
+            <span className="hidden max-w-36 truncate text-sm font-bold text-white/78 sm:inline">
+              {user?.name}
+            </span>
+            <button
+              type="button"
+              onClick={logout}
+              className="rounded-full border border-white/16 px-4 py-2 text-sm font-bold text-white/80 transition hover:bg-white/10 hover:text-white"
+            >
+              로그아웃
+            </button>
+          </div>
+        ) : (
+          <Link
+            href={actionHref}
+            className={
+              actionVariant === "filled"
+                ? "bg-brand-cream text-brand-navy hover:bg-brand-coral rounded-full px-4 py-2 text-sm font-black shadow-lg shadow-black/15 transition hover:-translate-y-0.5 hover:text-white sm:px-5"
+                : "rounded-full border border-white/16 px-4 py-2 text-sm font-bold text-white/80 transition hover:bg-white/10 hover:text-white"
+            }
+          >
+            {actionLabel}
+          </Link>
+        )}
       </div>
     </header>
   );
