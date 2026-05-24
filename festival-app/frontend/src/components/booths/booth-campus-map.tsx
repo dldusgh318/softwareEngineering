@@ -1,5 +1,5 @@
 import { campusLandmarks } from "@/constants/booths/booth.constants";
-import type { Booth } from "@/types/booths.types";
+import type { Booth } from "@/types/booth/booths.types";
 
 type BoothCampusMapProps = {
   booth: Booth;

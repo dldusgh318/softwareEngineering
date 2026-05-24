@@ -7,16 +7,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest run --config vitest.config.mts",
+    "test:watch": "vitest --config vitest.config.mts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
     "lint-staged": "lint-staged",
     "format:check": "prettier . --check",
-    "prepare": "cd ../.. && husky",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "prepare": "cd ../.. && husky"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.100.11",

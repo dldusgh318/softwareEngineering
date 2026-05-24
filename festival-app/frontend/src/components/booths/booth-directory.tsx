@@ -1,15 +1,31 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
-import { getBooths } from "@/apis/booths/booth.api";
+import { getBoothReservationsByApplicant, getBooths } from "@/apis/booths/booth.api";
 import { BoothCard } from "@/components/booths/booth-card";
 import { BoothDetailPanel } from "@/components/booths/booth-detail-panel";
+import { BoothReservationListPanel } from "@/components/booths/booth-reservation-list-panel";
 import SiteHeader from "@/components/SiteHeader";
-import type { Booth } from "@/types/booths.types";
+import {
+  getApplicantSnapshot,
+  parseApplicantSnapshot,
+  subscribeToApplicantChange,
+} from "@/lib/current-applicant";
+import type { Booth, BoothReservationApplication } from "@/types/booth/booths.types";
 
 export function BoothDirectory() {
+  const applicantSnapshot = useSyncExternalStore(
+    subscribeToApplicantChange,
+    getApplicantSnapshot,
+    () => null,
+  );
+  const currentApplicant = useMemo(
+    () => parseApplicantSnapshot(applicantSnapshot),
+    [applicantSnapshot],
+  );
   const [booths, setBooths] = useState<Booth[]>([]);
+  const [reservations, setReservations] = useState<BoothReservationApplication[]>([]);
   const [selectedBoothId, setSelectedBoothId] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -18,6 +34,7 @@ export function BoothDirectory() {
     () => booths.find((booth) => booth.id === selectedBoothId),
     [booths, selectedBoothId],
   );
+  const visibleReservations = currentApplicant ? reservations : [];
 
   useEffect(() => {
     let isActive = true;
@@ -52,6 +69,37 @@ export function BoothDirectory() {
       isActive = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!currentApplicant) {
+      queueMicrotask(() => setReservations([]));
+      return;
+    }
+
+    let isActive = true;
+    const controller = new AbortController();
+
+    getBoothReservationsByApplicant(currentApplicant.id, controller.signal)
+      .then((data) => {
+        if (isActive) {
+          setReservations(data);
+        }
+      })
+      .catch(() => {
+        if (isActive) {
+          setErrorMessage("내 예약 현황을 불러오지 못했습니다.");
+        }
+      });
+
+    return () => {
+      isActive = false;
+      controller.abort();
+    };
+  }, [currentApplicant]);
+
+  function handleReservationCreated(reservation: BoothReservationApplication) {
+    setReservations((currentReservations) => [reservation, ...currentReservations]);
+  }
 
   return (
     <main className="bg-brand-navy min-h-screen text-white">
@@ -93,9 +141,21 @@ export function BoothDirectory() {
                   />
                 ))}
           </div>
+
+          <BoothReservationListPanel
+            booths={booths}
+            isLoggedIn={currentApplicant !== null}
+            onSelectBooth={setSelectedBoothId}
+            reservations={visibleReservations}
+          />
         </div>
 
-        <BoothDetailPanel booth={selectedBooth} />
+        <BoothDetailPanel
+          booth={selectedBooth}
+          currentApplicant={currentApplicant}
+          onReservationCreated={handleReservationCreated}
+          reservations={visibleReservations}
+        />
       </section>
     </main>
   );
