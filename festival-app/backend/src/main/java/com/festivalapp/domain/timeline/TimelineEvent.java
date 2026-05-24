@@ -8,4 +8,5 @@ public record TimelineEvent(
     String category,
     LocalDateTime startsAt,
     LocalDateTime endsAt,
-    String location) {}
+    String location,
+    String description) {}
