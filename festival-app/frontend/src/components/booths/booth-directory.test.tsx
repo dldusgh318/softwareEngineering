@@ -140,6 +140,9 @@ describe("BoothDirectory", () => {
         "예약 신청이 완료되었습니다. 관리자 승인 대기 상태로 저장되었습니다.",
       ),
     ).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("region", { name: "내 예약 현황" })).getByText("신청 테이블 2개"),
+    ).toBeInTheDocument();
     expect(screen.getAllByText("관리자 승인 대기")).not.toHaveLength(0);
   });
 
@@ -176,9 +179,30 @@ describe("BoothDirectory", () => {
     expect(await screen.findByText("이미 신청한 부스")).toBeDisabled();
     expect(screen.getAllByText("관리자 승인 대기")).not.toHaveLength(0);
   });
+
+  it("shows a reservation list and selects reserved booth from it", async () => {
+    const user = userEvent.setup();
+    setLoggedInApplicant();
+    mockedGetBooths.mockResolvedValue(booths);
+    mockedGetBoothReservationsByApplicant.mockResolvedValue([
+      reservationApplication({ boothId: "booth-2", requestedTables: 3 }),
+    ]);
+
+    render(<BoothDirectory />);
+
+    const reservationList = await screen.findByRole("region", { name: "내 예약 현황" });
+    expect(within(reservationList).getByText("미니 게임 스테이션")).toBeInTheDocument();
+    expect(within(reservationList).getByText("신청 테이블 3개")).toBeInTheDocument();
+
+    await user.click(within(reservationList).getByRole("button", { name: /미니 게임 스테이션/ }));
+
+    expect(screen.getByRole("heading", { name: "미니 게임 스테이션" })).toBeInTheDocument();
+  });
 });
 
-function reservationApplication(): BoothReservationApplication {
+function reservationApplication(
+  overrides: Partial<BoothReservationApplication> = {},
+): BoothReservationApplication {
   return {
     id: "reservation-1",
     boothId: "booth-1",
@@ -189,6 +213,7 @@ function reservationApplication(): BoothReservationApplication {
     statusDescription: "관리자 승인 대기",
     createdAt: "2026-05-24T10:00:00",
     updatedAt: "2026-05-24T10:00:00",
+    ...overrides,
   };
 }
 

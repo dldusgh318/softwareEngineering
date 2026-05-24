@@ -74,6 +74,17 @@ class BoothReservationServiceTest {
   }
 
   @Test
+  void createReservationRejectsMissingBooth() {
+    BoothReservationService service = serviceWith(List.of(), new ArrayList<>());
+
+    assertThatThrownBy(() -> service.createReservation(
+        new BoothReservationCreateRequest("missing-booth", "user-1", "홍길동", 1)))
+        .isInstanceOf(ResponseStatusException.class)
+        .extracting("statusCode")
+        .isEqualTo(HttpStatus.NOT_FOUND);
+  }
+
+  @Test
   void getReservationsByApplicantReturnsOnlyRequestedUsersReservations() {
     List<BoothReservation> reservations = new ArrayList<>(List.of(
         reservation("reservation-1", "booth-1", "user-1", 1, BoothReservationStatus.PENDING_APPROVAL),

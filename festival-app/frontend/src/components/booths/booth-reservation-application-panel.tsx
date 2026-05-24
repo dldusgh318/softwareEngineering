@@ -1,34 +1,33 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { HTTPError } from "ky";
 
-import { createBoothReservation, getBoothReservationsByApplicant } from "@/apis/booths/booth.api";
+import { createBoothReservation } from "@/apis/booths/booth.api";
 import {
   boothReservationStatusLabels,
   boothReservationStatusStyles,
 } from "@/constants/booths/booth.constants";
+import type { CurrentApplicant } from "@/lib/current-applicant";
 import type { Booth, BoothReservationApplication } from "@/types/booths.types";
-
-const AUTH_STORAGE_KEY = "festival-app-current-user";
 
 type BoothReservationApplicationPanelProps = {
   booth: Booth;
+  currentApplicant: CurrentApplicant | null;
+  reservations: BoothReservationApplication[];
+  onReservationCreated: (reservation: BoothReservationApplication) => void;
 };
 
-type CurrentApplicant = {
-  id: string;
-  name: string;
-};
-
-export function BoothReservationApplicationPanel({ booth }: BoothReservationApplicationPanelProps) {
-  const currentApplicant = useMemo(() => getStoredApplicant(), []);
+export function BoothReservationApplicationPanel({
+  booth,
+  currentApplicant,
+  reservations,
+  onReservationCreated,
+}: BoothReservationApplicationPanelProps) {
   const [requestedTables, setRequestedTables] = useState(1);
-  const [reservations, setReservations] = useState<BoothReservationApplication[]>([]);
   const [messageByBoothId, setMessageByBoothId] = useState<Record<string, string>>({});
   const [errorMessage, setErrorMessage] = useState("");
-  const [isLoadingReservations, setIsLoadingReservations] = useState(currentApplicant !== null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectedBoothReservation = useMemo(
@@ -58,7 +57,7 @@ export function BoothReservationApplicationPanel({ booth }: BoothReservationAppl
         requestedTables,
       });
 
-      setReservations((currentReservations) => [reservation, ...currentReservations]);
+      onReservationCreated(reservation);
       setMessageByBoothId((currentMessages) => ({
         ...currentMessages,
         [reservation.boothId]:
@@ -70,37 +69,6 @@ export function BoothReservationApplicationPanel({ booth }: BoothReservationAppl
       setIsSubmitting(false);
     }
   }
-
-  useEffect(() => {
-    if (!currentApplicant) {
-      return;
-    }
-
-    let isActive = true;
-    const controller = new AbortController();
-
-    getBoothReservationsByApplicant(currentApplicant.id, controller.signal)
-      .then((data) => {
-        if (isActive) {
-          setReservations(data);
-        }
-      })
-      .catch(() => {
-        if (isActive) {
-          setErrorMessage("내 예약 상태를 불러오지 못했습니다.");
-        }
-      })
-      .finally(() => {
-        if (isActive) {
-          setIsLoadingReservations(false);
-        }
-      });
-
-    return () => {
-      isActive = false;
-      controller.abort();
-    };
-  }, [currentApplicant]);
 
   return (
     <div className="border-line-subtle border-t pt-5">
@@ -152,9 +120,7 @@ export function BoothReservationApplicationPanel({ booth }: BoothReservationAppl
 
         <button
           className="bg-brand-mint h-11 px-4 text-sm font-bold text-zinc-950 transition hover:bg-emerald-200 disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-white/45"
-          disabled={
-            !currentApplicant || isSubmitting || isLoadingReservations || hasActiveReservation
-          }
+          disabled={!currentApplicant || isSubmitting || hasActiveReservation}
           onClick={handleApply}
           type="button"
         >
@@ -182,9 +148,7 @@ export function BoothReservationApplicationPanel({ booth }: BoothReservationAppl
 
       <div className="border-line-subtle mt-4 border bg-white/5 p-3">
         <p className="text-text-muted text-sm font-semibold">내 예약 상태</p>
-        {isLoadingReservations ? (
-          <p className="text-text-secondary mt-2 text-sm">예약 상태를 불러오는 중입니다.</p>
-        ) : selectedBoothReservation ? (
+        {selectedBoothReservation ? (
           <dl className="mt-3 grid gap-2 text-sm">
             <div className="grid grid-cols-[96px_1fr] gap-3">
               <dt className="text-text-muted font-semibold">상태</dt>
@@ -201,31 +165,6 @@ export function BoothReservationApplicationPanel({ booth }: BoothReservationAppl
       </div>
     </div>
   );
-}
-
-function getStoredApplicant(): CurrentApplicant | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const storedUser = window.localStorage.getItem(AUTH_STORAGE_KEY);
-  if (!storedUser) {
-    return null;
-  }
-
-  try {
-    const parsedUser = JSON.parse(storedUser) as Partial<CurrentApplicant>;
-    if (parsedUser.id && parsedUser.name) {
-      return {
-        id: parsedUser.id,
-        name: parsedUser.name,
-      };
-    }
-  } catch {
-    return null;
-  }
-
-  return null;
 }
 
 async function resolveReservationErrorMessage(error: unknown) {

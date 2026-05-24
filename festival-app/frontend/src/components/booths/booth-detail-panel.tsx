@@ -1,12 +1,21 @@
 import { BoothCampusMap } from "@/components/booths/booth-campus-map";
 import { BoothReservationApplicationPanel } from "@/components/booths/booth-reservation-application-panel";
-import type { Booth } from "@/types/booths.types";
+import type { CurrentApplicant } from "@/lib/current-applicant";
+import type { Booth, BoothReservationApplication } from "@/types/booths.types";
 
 type BoothDetailPanelProps = {
   booth?: Booth;
+  currentApplicant: CurrentApplicant | null;
+  reservations: BoothReservationApplication[];
+  onReservationCreated: (reservation: BoothReservationApplication) => void;
 };
 
-export function BoothDetailPanel({ booth }: BoothDetailPanelProps) {
+export function BoothDetailPanel({
+  booth,
+  currentApplicant,
+  reservations,
+  onReservationCreated,
+}: BoothDetailPanelProps) {
   return (
     <aside className="border-line-subtle bg-surface-glass h-fit border p-5 shadow-sm backdrop-blur">
       {booth ? (
@@ -40,7 +49,12 @@ export function BoothDetailPanel({ booth }: BoothDetailPanelProps) {
             </div>
           </dl>
 
-          <BoothReservationApplicationPanel booth={booth} />
+          <BoothReservationApplicationPanel
+            booth={booth}
+            currentApplicant={currentApplicant}
+            onReservationCreated={onReservationCreated}
+            reservations={reservations}
+          />
         </div>
       ) : (
         <p className="text-text-secondary text-sm">부스를 선택해주세요.</p>
