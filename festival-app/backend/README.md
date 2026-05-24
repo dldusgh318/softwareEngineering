@@ -56,6 +56,31 @@ Response Example:
 ]
 ```
 
+### 부스 예약 신청
+
+```http
+POST /api/booth-reservations
+```
+
+Request Example:
+
+```json
+{
+  "boothId": "booth-1",
+  "applicantId": "user-1",
+  "applicantName": "홍길동",
+  "requestedTables": 2
+}
+```
+
+예약 신청 직후 상태는 `PENDING_APPROVAL`로 저장됩니다. 동일 사용자가 같은 부스에 이미 활성 예약을 신청한 경우, 또는 남은 테이블 수를 초과한 경우 `409 Conflict`를 반환합니다.
+
+### 사용자별 부스 예약 상태 조회
+
+```http
+GET /api/booth-reservations/applicants/{applicantId}
+```
+
 ## Run
 
 IDE에서 `FestivalBackendApplication`을 실행하거나, 터미널에서 Maven으로 실행합니다.
