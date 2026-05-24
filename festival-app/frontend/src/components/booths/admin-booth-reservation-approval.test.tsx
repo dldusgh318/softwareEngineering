@@ -46,7 +46,7 @@ describe("AdminBoothReservationApproval", () => {
         applicantName: "홍길동",
         status: "RESERVED",
         statusDescription: "QR 발급 완료",
-        qrCode: "QR-reservation-1",
+        qrCode: "http://localhost:3000/booths/reservations/reservation-1",
         sagaLogs: [
           {
             step: "APPROVED",
@@ -74,8 +74,12 @@ describe("AdminBoothReservationApproval", () => {
     expect(
       await screen.findByText("홍길동님의 예약을 승인하고 QR을 발급했습니다."),
     ).toBeInTheDocument();
-    expect(screen.getByText("QR-reservation-1")).toBeInTheDocument();
-    expect(screen.getByText("예약 QR")).toBeInTheDocument();
+    expect(
+      screen.getByText("http://localhost:3000/booths/reservations/reservation-1"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("예약 QR http://localhost:3000/booths/reservations/reservation-1"),
+    ).toBeInTheDocument();
   });
 });
 

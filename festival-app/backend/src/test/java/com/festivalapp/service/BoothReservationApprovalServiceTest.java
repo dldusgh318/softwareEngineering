@@ -43,7 +43,8 @@ class BoothReservationApprovalServiceTest {
 
     assertThat(response.status()).isEqualTo("RESERVED");
     assertThat(response.statusDescription()).isEqualTo("QR 발급 완료");
-    assertThat(response.qrCode()).isEqualTo("QR-reservation-1");
+    assertThat(response.qrCode())
+        .isEqualTo("http://localhost:3000/booths/reservations/reservation-1");
     assertThat(response.sagaLogs())
         .extracting(BoothReservationSagaLogResponse::step)
         .containsExactly("APPROVED", "QR_ISSUED");
@@ -78,7 +79,9 @@ class BoothReservationApprovalServiceTest {
   private BoothReservationApprovalService serviceWith(List<BoothReservation> reservations) {
     BoothReservationRepository repository =
         new BoothReservationRepository(new TestBoothReservationDataSource(reservations));
-    return new BoothReservationApprovalService(repository, reservation -> "QR-" + reservation.id());
+    return new BoothReservationApprovalService(
+        repository,
+        reservation -> "http://localhost:3000/booths/reservations/" + reservation.id());
   }
 
   private BoothReservation reservation(String id, BoothReservationStatus status) {

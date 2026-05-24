@@ -139,7 +139,7 @@ Response Example:
   "requestedTables": 2,
   "status": "RESERVED",
   "statusDescription": "QR 발급 완료",
-  "qrCode": "QR-reservation-1",
+  "qrCode": "http://localhost:3000/booths/reservations/reservation-1",
   "sagaLogs": [
     {
       "step": "APPROVED",

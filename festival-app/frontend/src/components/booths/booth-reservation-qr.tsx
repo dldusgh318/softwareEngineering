@@ -1,3 +1,5 @@
+import { QRCodeSVG } from "qrcode.react";
+
 type BoothReservationQrProps = {
   qrCode: string;
 };
@@ -5,14 +7,16 @@ type BoothReservationQrProps = {
 export function BoothReservationQr({ qrCode }: BoothReservationQrProps) {
   return (
     <div className="grid gap-3 sm:grid-cols-[112px_1fr] sm:items-center">
-      <div className="grid size-28 grid-cols-5 grid-rows-5 gap-1 border border-emerald-300 bg-white p-2">
-        {Array.from({ length: 25 }, (_, index) => (
-          <span
-            aria-hidden="true"
-            className={isFilledQrCell(qrCode, index) ? "bg-zinc-950" : "bg-white"}
-            key={index}
-          />
-        ))}
+      <div className="grid size-28 place-items-center border border-emerald-300 bg-white p-2">
+        <QRCodeSVG
+          aria-label={`예약 QR ${qrCode}`}
+          bgColor="#ffffff"
+          fgColor="#18181b"
+          level="M"
+          marginSize={1}
+          size={96}
+          value={qrCode}
+        />
       </div>
       <div className="min-w-0">
         <p className="text-sm font-semibold text-emerald-100">예약 QR</p>
@@ -20,9 +24,4 @@ export function BoothReservationQr({ qrCode }: BoothReservationQrProps) {
       </div>
     </div>
   );
-}
-
-function isFilledQrCell(qrCode: string, index: number) {
-  const charCode = qrCode.charCodeAt(index % qrCode.length);
-  return (charCode + index) % 3 !== 0;
 }

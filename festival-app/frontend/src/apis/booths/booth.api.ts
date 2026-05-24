@@ -22,6 +22,12 @@ export function getBoothReservationsByApplicant(applicantId: string, signal?: Ab
     .json<BoothReservationApplication[]>();
 }
 
+export function getBoothReservation(reservationId: string, signal?: AbortSignal) {
+  return apiClient
+    .get(`api/booth-reservations/${reservationId}`, { signal })
+    .json<BoothReservationApplication>();
+}
+
 export function getPendingBoothReservations(signal?: AbortSignal) {
   return apiClient
     .get("api/admin/booth-reservations/pending", { signal })

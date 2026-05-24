@@ -63,6 +63,16 @@ class BoothReservationControllerTest {
         .andExpect(jsonPath("$[0].applicantId").value("user-1"));
   }
 
+  @Test
+  void getReservationReturnsReservation() throws Exception {
+    given(boothReservationService.getReservation("reservation-1"))
+        .willReturn(reservationResponse("reservation-1", "user-1"));
+
+    mockMvc.perform(get("/api/booth-reservations/reservation-1"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value("reservation-1"));
+  }
+
   private BoothReservationResponse reservationResponse(String id, String applicantId) {
     LocalDateTime now = LocalDateTime.of(2026, 5, 24, 10, 0);
     return new BoothReservationResponse(

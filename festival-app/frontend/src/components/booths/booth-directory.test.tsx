@@ -225,14 +225,18 @@ describe("BoothDirectory", () => {
       reservationApplication({
         status: "RESERVED",
         statusDescription: "QR 발급 완료",
-        qrCode: "QR-reservation-1",
+        qrCode: "http://localhost:3000/booths/reservations/reservation-1",
       }),
     ]);
 
     render(<BoothDirectory />);
 
-    expect(await screen.findAllByText("QR-reservation-1")).toHaveLength(2);
-    expect(screen.getByText("예약 QR")).toBeInTheDocument();
+    expect(
+      await screen.findAllByText("http://localhost:3000/booths/reservations/reservation-1"),
+    ).toHaveLength(2);
+    expect(
+      screen.getByLabelText("예약 QR http://localhost:3000/booths/reservations/reservation-1"),
+    ).toBeInTheDocument();
   });
 });
 

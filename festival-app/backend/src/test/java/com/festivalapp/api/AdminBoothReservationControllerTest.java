@@ -47,7 +47,10 @@ class AdminBoothReservationControllerTest {
     given(approvalService.approveReservation(
         org.mockito.ArgumentMatchers.eq("reservation-1"),
         org.mockito.ArgumentMatchers.any(BoothReservationApprovalRequest.class)))
-        .willReturn(reservationResponse("reservation-1", "RESERVED", "QR-reservation-1"));
+        .willReturn(reservationResponse(
+            "reservation-1",
+            "RESERVED",
+            "http://localhost:3000/booths/reservations/reservation-1"));
 
     mockMvc.perform(post("/api/admin/booth-reservations/reservation-1/approve")
             .contentType(MediaType.APPLICATION_JSON)
@@ -59,7 +62,8 @@ class AdminBoothReservationControllerTest {
                 """))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("RESERVED"))
-        .andExpect(jsonPath("$.qrCode").value("QR-reservation-1"));
+        .andExpect(jsonPath("$.qrCode")
+            .value("http://localhost:3000/booths/reservations/reservation-1"));
   }
 
   private BoothReservationResponse reservationResponse(String id, String status, String qrCode) {
