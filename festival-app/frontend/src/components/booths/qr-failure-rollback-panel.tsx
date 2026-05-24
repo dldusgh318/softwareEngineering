@@ -2,27 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import {
+  boothReservationStatusLabels,
+  boothReservationStatusStyles,
+} from "@/constants/booths/booth.constants";
 import type {
   BoothReservation,
   BoothReservationStatus,
   QrFailureRollbackResponse,
 } from "@/types/booths.types";
-
-const statusLabels: Record<BoothReservationStatus, string> = {
-  PENDING_APPROVAL: "승인 대기",
-  APPROVED: "승인 완료",
-  QR_FAILED: "QR 실패",
-  RESERVED: "예약 완료",
-  CHECKED_IN: "체크인 완료",
-};
-
-const statusStyles: Record<BoothReservationStatus, string> = {
-  PENDING_APPROVAL: "border-amber-300 bg-amber-50 text-amber-800",
-  APPROVED: "border-sky-300 bg-sky-50 text-sky-800",
-  QR_FAILED: "border-rose-300 bg-rose-50 text-rose-800",
-  RESERVED: "border-emerald-300 bg-emerald-50 text-emerald-800",
-  CHECKED_IN: "border-zinc-300 bg-zinc-50 text-zinc-700",
-};
 
 export function QrFailureRollbackPanel() {
   const [reservations, setReservations] = useState<BoothReservation[]>([]);
@@ -130,7 +118,7 @@ export function QrFailureRollbackPanel() {
             {["PENDING_APPROVAL", "APPROVED", "RESERVED"].map((status) => (
               <div key={status} className="border border-zinc-200 bg-white p-5 shadow-sm">
                 <p className="text-sm font-semibold text-zinc-500">
-                  {statusLabels[status as BoothReservationStatus]}
+                  {boothReservationStatusLabels[status as BoothReservationStatus]}
                 </p>
                 <p className="mt-3 text-3xl font-bold">
                   {reservations.filter((reservation) => reservation.status === status).length}
@@ -161,9 +149,9 @@ export function QrFailureRollbackPanel() {
                       </span>
                     </span>
                     <span
-                      className={`inline-flex h-8 items-center justify-center border px-3 text-sm font-semibold ${statusStyles[reservation.status]}`}
+                      className={`inline-flex h-8 items-center justify-center border px-3 text-sm font-semibold ${boothReservationStatusStyles[reservation.status]}`}
                     >
-                      {statusLabels[reservation.status]}
+                      {boothReservationStatusLabels[reservation.status]}
                     </span>
                   </button>
                 ))
@@ -188,7 +176,7 @@ export function QrFailureRollbackPanel() {
               >
                 {reservations.map((reservation) => (
                   <option key={reservation.id} value={reservation.id}>
-                    {reservation.boothName} / {statusLabels[reservation.status]}
+                    {reservation.boothName} / {boothReservationStatusLabels[reservation.status]}
                   </option>
                 ))}
               </select>

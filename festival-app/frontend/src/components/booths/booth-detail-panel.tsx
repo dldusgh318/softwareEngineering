@@ -1,4 +1,5 @@
 import { BoothCampusMap } from "@/components/booths/booth-campus-map";
+import { BoothReservationApplicationPanel } from "@/components/booths/booth-reservation-application-panel";
 import type { Booth } from "@/types/booths.types";
 
 type BoothDetailPanelProps = {
@@ -38,6 +39,8 @@ export function BoothDetailPanel({ booth }: BoothDetailPanelProps) {
               <dd className="font-medium">예약 가능 {booth.availableTables}개</dd>
             </div>
           </dl>
+
+          <BoothReservationApplicationPanel booth={booth} />
         </div>
       ) : (
         <p className="text-text-secondary text-sm">부스를 선택해주세요.</p>

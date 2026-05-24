@@ -22,7 +22,28 @@ export type BoothReservationStatus =
   | "APPROVED"
   | "QR_FAILED"
   | "RESERVED"
-  | "CHECKED_IN";
+  | "CHECKED_IN"
+  | "COMPLETED"
+  | "CANCELLED";
+
+export type BoothReservationApplicationRequest = {
+  boothId: string;
+  applicantId: string;
+  applicantName: string;
+  requestedTables: number;
+};
+
+export type BoothReservationApplication = {
+  id: string;
+  boothId: string;
+  applicantId: string;
+  applicantName: string;
+  requestedTables: number;
+  status: BoothReservationStatus;
+  statusDescription: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type CompensationLog = {
   id: string;
