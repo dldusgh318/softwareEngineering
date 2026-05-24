@@ -25,8 +25,8 @@ public class TimelineController {
     return ResponseEntity.ok(timelineService.getTimeline(date));
   }
 
-  @GetMapping("/{id}")
-  ResponseEntity<TimelineEventResponse> getTimelineEvent(@PathVariable Long id) {
-    return ResponseEntity.ok(timelineService.getTimelineEvent(id));
+  @GetMapping("/{timelineId}")
+  ResponseEntity<TimelineEventResponse> getTimelineEvent(@PathVariable Long timelineId) {
+    return ResponseEntity.ok(timelineService.getTimelineEvent(timelineId));
   }
 }

@@ -28,8 +28,8 @@ public class TimelineService {
         .toList();
   }
 
-  public TimelineEventResponse getTimelineEvent(Long id) {
-    return timelineRepository.findById(id)
+  public TimelineEventResponse getTimelineEvent(Long timelineId) {
+    return timelineRepository.findById(timelineId)
         .map(this::toResponse)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "행사를 찾을 수 없습니다."));
   }

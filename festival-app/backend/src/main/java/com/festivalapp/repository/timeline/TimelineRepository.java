@@ -25,9 +25,9 @@ public class TimelineRepository {
         .toList();
   }
 
-  public Optional<TimelineEvent> findById(Long id) {
+  public Optional<TimelineEvent> findById(Long timelineId) {
     return timelineDataSource.findAll().stream()
-        .filter(event -> event.id().equals(id))
+        .filter(event -> event.id().equals(timelineId))
         .findFirst();
   }
 
