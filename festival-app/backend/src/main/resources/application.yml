@@ -11,5 +11,5 @@ app:
       - http://localhost:3000
       - http://127.0.0.1:3000
   jwt:
-    secret: "festival-auth-development-secret-key-for-local-testing-32-bytes"
-    expiration-millis: 3600000
+    secret: ${JWT_SECRET}
+    expiration-millis: ${JWT_EXPIRATION_MILLIS:3600000}

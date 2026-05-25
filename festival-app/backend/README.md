@@ -62,8 +62,11 @@ IDE에서 `FestivalBackendApplication`을 실행하거나, 터미널에서 Maven
 
 ```bash
 cd festival-app/backend
+export JWT_SECRET="replace-with-at-least-32-byte-secret-key"
 mvn spring-boot:run
 ```
+
+JWT 만료 시간은 필요하면 `JWT_EXPIRATION_MILLIS` 환경변수로 조정할 수 있습니다.
 
 기본 서버 주소:
 
