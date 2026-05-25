@@ -1,8 +1,37 @@
+"use client";
+
+import { type FormEvent, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import SiteHeader from "@/components/SiteHeader";
+import { useAuth } from "@/providers/AuthProvider";
+import { getAuthErrorMessage } from "@/utils/auth-error";
 
 export default function SignupPage() {
+  const router = useRouter();
+  const { signup } = useAuth();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setErrorMessage("");
+    setIsSubmitting(true);
+
+    try {
+      await signup({ name, email, password });
+      router.replace("/");
+    } catch (error) {
+      setErrorMessage(await getAuthErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <main className="bg-brand-navy text-text-primary relative min-h-screen overflow-hidden">
       <div
@@ -24,11 +53,15 @@ export default function SignupPage() {
             </p>
           </div>
 
-          <form className="mt-8 grid gap-5">
+          <form className="mt-8 grid gap-5" onSubmit={handleSubmit}>
             <label className="grid gap-2">
               <span className="text-sm font-bold text-white/74">이름</span>
               <input
+                autoComplete="name"
+                onChange={(event) => setName(event.target.value)}
+                required
                 type="text"
+                value={name}
                 placeholder="홍길동"
                 className="focus:border-brand-cream h-12 rounded-2xl border border-white/14 bg-white/10 px-4 text-white transition outline-none placeholder:text-white/36 focus:bg-white/14"
               />
@@ -37,7 +70,11 @@ export default function SignupPage() {
             <label className="grid gap-2">
               <span className="text-sm font-bold text-white/74">이메일</span>
               <input
+                autoComplete="email"
+                onChange={(event) => setEmail(event.target.value)}
+                required
                 type="email"
+                value={email}
                 placeholder="wow@hongik.ac.kr"
                 className="focus:border-brand-cream h-12 rounded-2xl border border-white/14 bg-white/10 px-4 text-white transition outline-none placeholder:text-white/36 focus:bg-white/14"
               />
@@ -46,17 +83,29 @@ export default function SignupPage() {
             <label className="grid gap-2">
               <span className="text-sm font-bold text-white/74">비밀번호</span>
               <input
+                autoComplete="new-password"
+                minLength={8}
+                onChange={(event) => setPassword(event.target.value)}
+                required
                 type="password"
+                value={password}
                 placeholder="비밀번호를 입력하세요"
                 className="focus:border-brand-cream h-12 rounded-2xl border border-white/14 bg-white/10 px-4 text-white transition outline-none placeholder:text-white/36 focus:bg-white/14"
               />
             </label>
 
+            {errorMessage ? (
+              <p className="rounded-2xl border border-red-300/40 bg-red-500/14 px-4 py-3 text-sm font-semibold text-red-100">
+                {errorMessage}
+              </p>
+            ) : null}
+
             <button
               type="submit"
+              disabled={isSubmitting}
               className="bg-brand-coral shadow-brand-coral/25 hover:bg-brand-coral-soft hover:text-brand-navy h-12 rounded-2xl text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5"
             >
-              가입하기
+              {isSubmitting ? "가입 중" : "가입하기"}
             </button>
           </form>
 
