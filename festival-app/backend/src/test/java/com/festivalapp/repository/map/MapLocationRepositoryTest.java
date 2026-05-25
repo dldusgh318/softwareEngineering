@@ -39,4 +39,52 @@ class MapLocationRepositoryTest {
           assertThat(location.area().y()).isBetween(0.0, 100.0);
         });
   }
+
+  @Test
+  void findByCategoryReturnsOnlyMatchingMapLocations() {
+    MapLocation mainStage =
+        new MapLocation(
+            1L,
+            "메인무대",
+            MapLocationCategory.STAGE,
+            new MapArea(50, 30, 18, 12),
+            "중앙 공연장입니다.");
+    MapLocation boothZone =
+        new MapLocation(
+            2L,
+            "낮 부스존",
+            MapLocationCategory.BOOTH,
+            new MapArea(31, 49, 22, 16),
+            "체험 부스 구역입니다.");
+    MapLocationRepository mapLocationRepository =
+        new MapLocationRepository(() -> List.of(mainStage, boothZone));
+
+    List<MapLocation> mapLocations = mapLocationRepository.findByCategory(MapLocationCategory.BOOTH);
+
+    assertThat(mapLocations).containsExactly(boothZone);
+  }
+
+  @Test
+  void findByCategoryReturnsAllMapLocationsWhenCategoryIsNull() {
+    MapLocation mainStage =
+        new MapLocation(
+            1L,
+            "메인무대",
+            MapLocationCategory.STAGE,
+            new MapArea(50, 30, 18, 12),
+            "중앙 공연장입니다.");
+    MapLocation boothZone =
+        new MapLocation(
+            2L,
+            "낮 부스존",
+            MapLocationCategory.BOOTH,
+            new MapArea(31, 49, 22, 16),
+            "체험 부스 구역입니다.");
+    MapLocationRepository mapLocationRepository =
+        new MapLocationRepository(() -> List.of(mainStage, boothZone));
+
+    List<MapLocation> mapLocations = mapLocationRepository.findByCategory(null);
+
+    assertThat(mapLocations).containsExactly(mainStage, boothZone);
+  }
 }
