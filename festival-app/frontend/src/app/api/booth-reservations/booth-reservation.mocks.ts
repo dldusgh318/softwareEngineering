@@ -1,4 +1,4 @@
-import type { BoothReservation } from "@/types/booths.types";
+import type { BoothReservation } from "@/types/booth/booths.types";
 
 const approvedAt = new Date("2026-05-20T10:00:00+09:00").toISOString();
 

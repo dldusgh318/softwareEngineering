@@ -1,9 +1,9 @@
 import { initialBoothReservations } from "@/app/api/booth-reservations/booth-reservation.mocks";
 import type {
   BoothReservation,
-  BoothReservationStatus,
   CompensationLog,
-} from "@/types/booths.types";
+  QrFailureReservationStatus,
+} from "@/types/booth/booths.types";
 
 const globalForBoothReservations = globalThis as typeof globalThis & {
   boothReservations?: BoothReservation[];
@@ -46,8 +46,8 @@ export function rollbackApprovalAfterQrFailure({
     };
   }
 
-  const fromStatus: BoothReservationStatus = reservation.status;
-  const toStatus: BoothReservationStatus = "PENDING_APPROVAL";
+  const fromStatus: QrFailureReservationStatus = reservation.status;
+  const toStatus: QrFailureReservationStatus = "PENDING_APPROVAL";
   const compensationLog: CompensationLog = {
     id: `compensation-${Date.now()}`,
     reservationId,

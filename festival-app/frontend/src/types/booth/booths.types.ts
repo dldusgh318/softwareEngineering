@@ -20,15 +20,36 @@ export type Booth = {
 export type BoothReservationStatus =
   | "PENDING_APPROVAL"
   | "APPROVED"
-  | "QR_FAILED"
-  | "RESERVED"
-  | "CHECKED_IN";
+  | "CHECKED_IN"
+  | "COMPLETED"
+  | "CANCELLED";
+
+export type BoothReservationApplicationRequest = {
+  boothId: string;
+  applicantId: string;
+  applicantName: string;
+  requestedTables: number;
+};
+
+export type BoothReservationApplication = {
+  id: string;
+  boothId: string;
+  applicantId: string;
+  applicantName: string;
+  requestedTables: number;
+  status: BoothReservationStatus;
+  statusDescription: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type QrFailureReservationStatus = BoothReservationStatus | "QR_FAILED" | "RESERVED";
 
 export type CompensationLog = {
   id: string;
   reservationId: string;
-  fromStatus: BoothReservationStatus;
-  toStatus: BoothReservationStatus;
+  fromStatus: QrFailureReservationStatus;
+  toStatus: QrFailureReservationStatus;
   reason: string;
   createdAt: string;
 };
@@ -38,7 +59,7 @@ export type BoothReservation = {
   applicantName: string;
   boothName: string;
   location: string;
-  status: BoothReservationStatus;
+  status: QrFailureReservationStatus;
   approvedAt: string | null;
   qrCode: string | null;
   qrFailureReason: string | null;

@@ -1,4 +1,4 @@
-import type { Booth } from "@/types/booths.types";
+import type { Booth, QrFailureReservationStatus } from "@/types/booth/booths.types";
 
 export const boothCategoryLabels: Record<Booth["category"], string> = {
   FOOD: "푸드",
@@ -40,3 +40,23 @@ export const campusLandmarks = [
     mapY: 72,
   },
 ] as const;
+
+export const boothReservationStatusLabels: Record<QrFailureReservationStatus, string> = {
+  PENDING_APPROVAL: "승인 대기",
+  APPROVED: "승인 완료",
+  QR_FAILED: "QR 실패",
+  RESERVED: "예약 완료",
+  CHECKED_IN: "체크인 완료",
+  COMPLETED: "이용 완료",
+  CANCELLED: "예약 취소",
+};
+
+export const boothReservationStatusStyles: Record<QrFailureReservationStatus, string> = {
+  PENDING_APPROVAL: "border-amber-300 bg-amber-50 text-amber-800",
+  APPROVED: "border-sky-300 bg-sky-50 text-sky-800",
+  QR_FAILED: "border-rose-300 bg-rose-50 text-rose-800",
+  RESERVED: "border-emerald-300 bg-emerald-50 text-emerald-800",
+  CHECKED_IN: "border-zinc-300 bg-zinc-50 text-zinc-700",
+  COMPLETED: "border-violet-300 bg-violet-50 text-violet-800",
+  CANCELLED: "border-neutral-300 bg-neutral-50 text-neutral-700",
+};
