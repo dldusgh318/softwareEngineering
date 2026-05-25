@@ -7,7 +7,7 @@ import com.festivalapp.dto.auth.SignupRequest;
 import com.festivalapp.dto.auth.UserResponse;
 import com.festivalapp.repository.auth.UserRepository;
 import com.festivalapp.security.JwtTokenProvider;
-import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,13 +29,11 @@ public class AuthService {
     }
 
     User user =
-        new User(
+        User.create(
             UUID.randomUUID().toString(),
-            request.name().trim(),
+            request.name(),
             email,
-            passwordEncoder.encode(request.password()),
-            LocalDateTime.now());
-
+            passwordEncoder.encode(request.password()));
     User savedUser = userRepository.save(user);
     return toAuthResponse(savedUser);
   }
@@ -51,6 +49,10 @@ public class AuthService {
     }
 
     return toAuthResponse(user);
+  }
+
+  public Optional<UserResponse> getCurrentUser(String userId) {
+    return userRepository.findById(userId).map(UserResponse::from);
   }
 
   private AuthResponse toAuthResponse(User user) {

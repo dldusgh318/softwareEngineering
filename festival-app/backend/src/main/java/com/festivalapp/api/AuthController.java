@@ -4,7 +4,6 @@ import com.festivalapp.dto.auth.AuthResponse;
 import com.festivalapp.dto.auth.LoginRequest;
 import com.festivalapp.dto.auth.SignupRequest;
 import com.festivalapp.dto.auth.UserResponse;
-import com.festivalapp.repository.auth.UserRepository;
 import com.festivalapp.security.AuthenticatedUser;
 import com.festivalapp.service.auth.AuthService;
 import jakarta.validation.Valid;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
   private final AuthService authService;
-  private final UserRepository userRepository;
 
   @PostMapping("/signup")
   ResponseEntity<AuthResponse> signup(@Valid @RequestBody SignupRequest request) {
@@ -37,9 +35,8 @@ public class AuthController {
 
   @GetMapping("/me")
   ResponseEntity<UserResponse> me(@AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-    return userRepository
-        .findById(authenticatedUser.id())
-        .map(UserResponse::from)
+    return authService
+        .getCurrentUser(authenticatedUser.id())
         .map(ResponseEntity::ok)
         .orElseGet(() -> ResponseEntity.notFound().build());
   }
