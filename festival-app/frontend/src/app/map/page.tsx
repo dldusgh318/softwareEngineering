@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { getMapLocations } from "@/apis/map/map.api";
+import MapCategoryFilter from "@/components/map/MapCategoryFilter";
 import MapGuidePanel from "@/components/map/MapGuidePanel";
 import MapLocationList from "@/components/map/MapLocationList";
 import SiteHeader from "@/components/SiteHeader";
-import type { MapLocation } from "@/types/map/map.types";
+import type { MapLocation, MapLocationCategory } from "@/types/map/map.types";
 
 export default function MapPage() {
+  const [selectedCategory, setSelectedCategory] = useState<MapLocationCategory | null>(null);
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
   const {
     data: locations = [],
@@ -17,9 +19,27 @@ export default function MapPage() {
     isError,
     isLoading,
   } = useQuery<MapLocation[]>({
-    queryKey: ["map-locations"],
-    queryFn: ({ signal }) => getMapLocations({ signal }),
+    queryKey: ["map-locations", selectedCategory],
+    queryFn: ({ signal }) => getMapLocations({ category: selectedCategory, signal }),
   });
+  const effectiveSelectedLocationId = useMemo(() => {
+    if (locations.length === 0) {
+      return null;
+    }
+
+    const hasSelectedLocation = locations.some((location) => location.id === selectedLocationId);
+
+    return hasSelectedLocation ? selectedLocationId : locations[0].id;
+  }, [locations, selectedLocationId]);
+  const selectedLocation = useMemo(
+    () => locations.find((location) => location.id === effectiveSelectedLocationId) ?? null,
+    [effectiveSelectedLocationId, locations],
+  );
+
+  const handleSelectCategory = (category: MapLocationCategory | null) => {
+    setSelectedCategory(category);
+    setSelectedLocationId(null);
+  };
 
   return (
     <main className="bg-brand-navy text-text-primary min-h-screen">
@@ -30,16 +50,21 @@ export default function MapPage() {
           <p className="typo-caption text-brand-blue-soft mb-4 font-black">FESTIVAL MAP</p>
           <h1 className="typo-title text-4xl sm:text-5xl">축제 안내도</h1>
           <p className="typo-body text-text-secondary mt-4 max-w-2xl">
-            공연장, 부스, 편의시설 위치를 지도 위 마커와 목록으로 확인하세요.
+            공연장, 부스, 안내, 편의시설 위치를 지도 위 마커와 목록으로 확인하세요.
           </p>
         </div>
+
+        <MapCategoryFilter
+          selectedCategory={selectedCategory}
+          onSelectCategory={handleSelectCategory}
+        />
 
         <section className="mt-7 grid gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(19rem,0.75fr)]">
           <MapGuidePanel
             isError={isError}
             isLoading={isLoading}
             locations={locations}
-            selectedLocationId={selectedLocationId}
+            selectedLocationId={effectiveSelectedLocationId}
             onSelectLocation={setSelectedLocationId}
           />
 
@@ -48,7 +73,8 @@ export default function MapPage() {
             isError={isError}
             isLoading={isLoading}
             locations={locations}
-            selectedLocationId={selectedLocationId}
+            selectedLocation={selectedLocation}
+            selectedLocationId={effectiveSelectedLocationId}
             onSelectLocation={setSelectedLocationId}
           />
         </section>

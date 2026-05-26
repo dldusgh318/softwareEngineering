@@ -39,6 +39,7 @@ describe("MapLocationList", () => {
         isError={false}
         isLoading={false}
         locations={locations}
+        selectedLocation={null}
         selectedLocationId={null}
         onSelectLocation={handleSelectLocation}
       />,
@@ -48,6 +49,9 @@ describe("MapLocationList", () => {
     expect(screen.getByText("편의시설")).toBeInTheDocument();
     expect(screen.getByText("메인무대")).toBeInTheDocument();
     expect(screen.getByText("화장실")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Z2동 방향에 위치한 행사장 인근 화장실입니다."),
+    ).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /화장실/i }));
 
@@ -61,11 +65,30 @@ describe("MapLocationList", () => {
         isError
         isLoading={false}
         locations={[]}
+        selectedLocation={null}
         selectedLocationId={null}
         onSelectLocation={vi.fn()}
       />,
     );
 
     expect(screen.getByText("위치 API 오류")).toBeInTheDocument();
+  });
+
+  it("선택된 위치 상세 정보를 별도 패널로 표시한다", () => {
+    render(
+      <MapLocationList
+        error={null}
+        isError={false}
+        isLoading={false}
+        locations={locations}
+        selectedLocation={locations[1]}
+        selectedLocationId={2}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("선택 위치")).toBeInTheDocument();
+    expect(screen.getAllByText("화장실")).toHaveLength(2);
+    expect(screen.getAllByText("Z2동 방향에 위치한 행사장 인근 화장실입니다.")).toHaveLength(1);
   });
 });
