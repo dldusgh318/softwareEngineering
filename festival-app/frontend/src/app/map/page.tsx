@@ -50,7 +50,7 @@ export default function MapPage() {
           <p className="typo-caption text-brand-blue-soft mb-4 font-black">FESTIVAL MAP</p>
           <h1 className="typo-title text-4xl sm:text-5xl">축제 안내도</h1>
           <p className="typo-body text-text-secondary mt-4 max-w-2xl">
-            공연장, 부스, 편의시설 위치를 지도 위 마커와 목록으로 확인하세요.
+            공연장, 부스, 안내, 편의시설 위치를 지도 위 마커와 목록으로 확인하세요.
           </p>
         </div>
 
