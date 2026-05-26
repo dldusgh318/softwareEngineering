@@ -78,7 +78,7 @@ describe("PerformanceReservationPanel", () => {
     expect(handleReserve).toHaveBeenCalledOnce();
   });
 
-  it("예매 완료 후 QR 티켓과 Saga 로그를 표시한다", () => {
+  it("예매 완료 후 QR 티켓을 표시하고 내부 Saga 단계는 숨긴다", () => {
     render(
       <PerformanceReservationPanel
         errorMessage=""
@@ -95,7 +95,8 @@ describe("PerformanceReservationPanel", () => {
     expect(
       screen.getByLabelText("공연 티켓 QR http://localhost:3000/performances/tickets/ticket-1"),
     ).toBeInTheDocument();
-    expect(screen.getByText("SEAT_CHECKED")).toBeInTheDocument();
-    expect(screen.getByText("COMPLETED")).toBeInTheDocument();
+    expect(screen.getByText("예매 번호 ticket-1")).toBeInTheDocument();
+    expect(screen.queryByText("SEAT_CHECKED")).not.toBeInTheDocument();
+    expect(screen.queryByText("COMPLETED")).not.toBeInTheDocument();
   });
 });
