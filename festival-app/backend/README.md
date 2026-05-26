@@ -99,12 +99,86 @@ Response Example:
 ]
 ```
 
+### 관리자 예약 신청 목록 조회
+
+```http
+GET /api/admin/booth-reservations/pending
+```
+
+관리자가 승인해야 하는 `PENDING_APPROVAL` 상태의 예약 신청 목록을 반환합니다.
+
+### 관리자 예약 승인 및 QR 발급
+
+```http
+POST /api/admin/booth-reservations/{reservationId}/approve
+```
+
+Request Example:
+
+```json
+{
+  "approverId": "admin-1",
+  "approverName": "관리자"
+}
+```
+
+승인 가능한 예약은 `PENDING_APPROVAL` 상태의 예약뿐입니다. 승인 요청이 들어오면 Saga는 다음 순서로 진행됩니다.
+
+```text
+PENDING_APPROVAL → APPROVED → QR 발급 → RESERVED
+```
+
+Response Example:
+
+```json
+{
+  "id": "reservation-1",
+  "boothId": "booth-1",
+  "applicantId": "user-1",
+  "applicantName": "홍길동",
+  "requestedTables": 2,
+  "status": "RESERVED",
+  "statusDescription": "QR 발급 완료",
+  "qrCode": "http://localhost:3000/booths/reservations/reservation-1",
+  "sagaLogs": [
+    {
+      "step": "APPROVED",
+      "message": "관리자가 예약 신청을 승인했습니다.",
+      "createdAt": "2026-05-24T10:00:00"
+    },
+    {
+      "step": "QR_ISSUED",
+      "message": "QR 발급에 성공해 예약 완료 상태로 전환했습니다.",
+      "createdAt": "2026-05-24T10:00:00"
+    }
+  ],
+  "createdAt": "2026-05-24T09:50:00",
+  "updatedAt": "2026-05-24T10:00:00"
+}
+```
+
+### 부스 예약 단건 확인
+
+```http
+GET /api/booth-reservations/{reservationId}
+```
+
+발급된 QR URL로 진입한 프론트엔드 예약 확인 화면에서 사용하는 조회 API입니다.
+
+QR 발급 값은 프론트엔드 예약 확인 페이지 URL입니다.
+
+```text
+{app.frontend-base-url}/booths/reservations/{reservationId}
+```
+
+로컬 기본값은 `http://localhost:3000`이며, 배포 환경에서는 `app.frontend-base-url` 설정으로 변경합니다.
+
 ## 부스 예약 Saga 기록
 
 이슈 #6은 부스 예약 Saga의 시작점입니다.
 
 ```text
-부스 예약 신청 → PENDING_APPROVAL 저장 → 관리자 승인 → QR 발급 → 예약 완료/체크인
+부스 예약 신청 → PENDING_APPROVAL 저장 → 관리자 승인 → APPROVED → QR 발급 → RESERVED → 체크인
 ```
 
 현재 단계에서 보장하는 규칙:
@@ -114,6 +188,42 @@ Response Example:
 - 신청 테이블 수는 1개 이상이어야 합니다.
 - 이미 활성 예약으로 점유된 테이블 수를 제외하고, 남은 테이블 수를 초과해 신청할 수 없습니다.
 - 사용자별 예약 상태 조회 API로 Saga 시작 상태를 확인할 수 있습니다.
+- 관리자는 승인 대기 예약 목록을 조회하고, 승인 API를 통해 QR 발급까지 이어지는 Saga를 시작할 수 있습니다.
+- QR 발급이 성공하면 예약 상태는 `RESERVED`로 전환되고, 승인 응답의 `sagaLogs`로 진행 단계를 확인할 수 있습니다.
+
+## 이슈 #7 외부 행위자 개입 기록
+
+관리자 승인은 시스템 내부 자동 흐름이 아니라 외부 행위자의 명시적인 판단이 필요한 단계입니다.
+
+이번 구현에서는 외부 행위자 개입을 다음처럼 처리했습니다.
+
+- 관리자가 처리할 대상은 `GET /api/admin/booth-reservations/pending`으로 분리했습니다.
+- 승인 행위는 `POST /api/admin/booth-reservations/{reservationId}/approve`로 명시했습니다.
+- 승인과 QR 발급은 하나의 트랜잭션으로 처리합니다.
+- 서비스는 승인 요청을 받은 뒤 예약 상태를 `APPROVED`로 변경하고, QR 발급 성공 후 `RESERVED`로 변경합니다.
+- QR 발급은 `QrCodeIssuer` 인터페이스로 분리해 승인 Saga와 QR 생성 방식을 느슨하게 연결했습니다.
+- QR 발급 성공 후 최종 사용자 예약 상태는 `RESERVED`가 됩니다.
+- 승인 응답의 `sagaLogs`에 `APPROVED`, `QR_ISSUED` 단계를 담아 Saga 진행 상태를 확인할 수 있게 했습니다.
+
+### 관리자 승인 개입 방식
+
+관리자 개입은 예약 생성 시점에 자동 실행하지 않고, 별도 관리자 API와 화면에서만 실행합니다.
+
+- 사용자는 예약을 신청하면 `PENDING_APPROVAL` 상태까지만 만들 수 있습니다.
+- 관리자는 승인 대기 목록에서 예약을 고른 뒤 승인 요청을 보냅니다.
+- 시스템은 승인 요청을 받은 예약이 `PENDING_APPROVAL`인지 다시 검증합니다.
+- 검증을 통과한 경우에만 `APPROVED`로 상태를 바꾸고 QR 발급을 진행합니다.
+- QR 발급까지 성공해야 최종 상태를 `RESERVED`로 둡니다.
+
+### AI 외부 행위자 처리 회고
+
+이번 구현에서 AI는 관리자를 단순 내부 조건문으로 대체하지 않고, Saga를 멈추는 외부 행위자로 모델링했습니다.
+
+- 예약 신청과 관리자 승인을 다른 유스케이스로 분리해 자동 승인처럼 보이지 않게 했습니다.
+- 승인 대상 검증을 서비스 계층에 두어 화면이나 클라이언트 상태에만 의존하지 않게 했습니다.
+- QR 발급은 `QrCodeIssuer` 인터페이스 뒤에 두어 승인 흐름과 발급 방식의 결합을 낮췄습니다.
+- QR 값은 단순 토큰이 아니라 예약 확인 URL로 발급해 실제 사용자가 스캔 후 확인 화면으로 이동할 수 있게 했습니다.
+- Saga 진행 상태는 저장 엔티티 로그 대신 승인 응답의 `sagaLogs`로 제공해 현재 요구 범위에서만 확인 가능하게 했습니다.
 
 ## 이슈 #6 테스트 범위
 
@@ -133,6 +243,23 @@ Response Example:
 - `BoothReservationStatusTest`
   - 예약 상태 설명 필드가 함께 제공되는지 검증합니다.
 
+### Backend - 이슈 #7
+
+- `AdminBoothReservationControllerTest`
+  - 관리자 예약 신청 목록 조회 API가 승인 대기 예약을 반환하는지 검증합니다.
+  - 관리자 승인 API가 QR 코드가 포함된 `RESERVED` 예약을 반환하는지 검증합니다.
+- `BoothReservationApprovalServiceTest`
+  - 승인 대기 예약 목록만 조회되는지 검증합니다.
+  - `PENDING_APPROVAL → APPROVED → QR 발급 → RESERVED` 정상 흐름을 검증합니다.
+  - 승인 대상이 아닌 예약 승인 시 `409 Conflict`가 발생하는지 검증합니다.
+  - 존재하지 않는 예약 승인 시 `404 Not Found`가 발생하는지 검증합니다.
+- `BoothReservationServiceTest`
+  - QR 스캔 후 예약 확인 화면에서 사용할 예약 단건 조회를 검증합니다.
+- `BoothReservationRepositoryTest`
+  - 상태별 예약 조회와 예약 업데이트가 정상 동작하는지 검증합니다.
+- `InMemoryQrCodeIssuerTest`
+  - QR 발급 값이 예약 확인 URL인지 검증합니다.
+
 ### Frontend
 
 - `BoothDirectory` 테스트
@@ -142,6 +269,12 @@ Response Example:
   - 기존 예약이 있으면 중복 신청 버튼이 비활성화되는지 검증합니다.
   - 내 예약 현황 목록에서 예약 카드가 표시되고, 카드 클릭 시 해당 부스로 이동하는지 검증합니다.
   - 로그인 정보가 없으면 예약 신청과 예약 현황이 로그인 안내로 제한되는지 검증합니다.
+  - `RESERVED` 예약의 QR URL과 실제 QR SVG가 표시되는지 검증합니다.
+- `AdminBoothReservationApproval` 테스트
+  - 관리자 승인 대기 예약 목록이 표시되는지 검증합니다.
+  - 승인 요청 후 QR URL이 포함된 `RESERVED` 예약이 표시되는지 검증합니다.
+- `BoothReservationVerification` 테스트
+  - QR URL로 진입한 예약 확인 화면이 단건 조회 API 응답을 표시하는지 검증합니다.
 
 ## Run
 

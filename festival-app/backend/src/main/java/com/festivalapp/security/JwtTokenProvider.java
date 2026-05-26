@@ -1,6 +1,7 @@
 package com.festivalapp.security;
 
 import com.festivalapp.domain.auth.User;
+import com.festivalapp.domain.auth.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -27,6 +28,7 @@ public class JwtTokenProvider {
     return Jwts.builder()
         .subject(user.id())
         .claim("email", user.email())
+        .claim("role", user.role().name())
         .issuedAt(now)
         .expiration(expiresAt)
         .signWith(secretKey)
@@ -41,6 +43,17 @@ public class JwtTokenProvider {
             .parseSignedClaims(token)
             .getPayload();
 
-    return new AuthenticatedUser(claims.getSubject(), claims.get("email", String.class));
+    return new AuthenticatedUser(
+        claims.getSubject(),
+        claims.get("email", String.class),
+        parseRole(claims.get("role", String.class)));
+  }
+
+  private UserRole parseRole(String role) {
+    if (role == null || role.isBlank()) {
+      return UserRole.USER;
+    }
+
+    return UserRole.valueOf(role);
   }
 }

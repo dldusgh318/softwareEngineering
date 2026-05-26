@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { HTTPError } from "ky";
 
 import { createBoothReservation } from "@/apis/booths/booth.api";
+import { BoothReservationQr } from "@/components/booths/booth-reservation-qr";
 import {
   boothReservationStatusLabels,
   boothReservationStatusStyles,
@@ -158,6 +159,11 @@ export function BoothReservationApplicationPanel({
               <dt className="text-text-muted font-semibold">테이블</dt>
               <dd>{selectedBoothReservation.requestedTables}개</dd>
             </div>
+            {selectedBoothReservation.qrCode ? (
+              <div className="border-line-subtle mt-2 border-t pt-3">
+                <BoothReservationQr qrCode={selectedBoothReservation.qrCode} />
+              </div>
+            ) : null}
           </dl>
         ) : (
           <p className="text-text-secondary mt-2 text-sm">아직 이 부스에 신청한 예약이 없습니다.</p>

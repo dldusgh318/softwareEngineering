@@ -3,6 +3,7 @@ import type {
   Booth,
   BoothReservationApplication,
   BoothReservationApplicationRequest,
+  BoothReservationApprovalRequest,
 } from "@/types/booth/booths.types";
 
 export function getBooths(signal?: AbortSignal) {
@@ -19,4 +20,25 @@ export function getBoothReservationsByApplicant(applicantId: string, signal?: Ab
   return apiClient
     .get(`api/booth-reservations/applicants/${applicantId}`, { signal })
     .json<BoothReservationApplication[]>();
+}
+
+export function getBoothReservation(reservationId: string, signal?: AbortSignal) {
+  return apiClient
+    .get(`api/booth-reservations/${reservationId}`, { signal })
+    .json<BoothReservationApplication>();
+}
+
+export function getPendingBoothReservations(signal?: AbortSignal) {
+  return apiClient
+    .get("api/admin/booth-reservations/pending", { signal })
+    .json<BoothReservationApplication[]>();
+}
+
+export function approveBoothReservation(
+  reservationId: string,
+  request: BoothReservationApprovalRequest,
+) {
+  return apiClient
+    .post(`api/admin/booth-reservations/${reservationId}/approve`, { json: request })
+    .json<BoothReservationApplication>();
 }

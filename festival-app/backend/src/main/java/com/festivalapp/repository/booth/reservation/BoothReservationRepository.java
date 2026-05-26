@@ -4,6 +4,7 @@ import com.festivalapp.domain.booth.reservation.BoothReservation;
 import com.festivalapp.domain.booth.reservation.BoothReservationStatus;
 import com.festivalapp.repository.booth.reservation.datasource.BoothReservationDataSource;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -15,6 +16,16 @@ public class BoothReservationRepository {
 
   public List<BoothReservation> findAll() {
     return boothReservationDataSource.findAll();
+  }
+
+  public Optional<BoothReservation> findById(String reservationId) {
+    return boothReservationDataSource.findById(reservationId);
+  }
+
+  public List<BoothReservation> findByStatus(BoothReservationStatus status) {
+    return findAll().stream()
+        .filter(reservation -> reservation.status() == status)
+        .toList();
   }
 
   public List<BoothReservation> findByApplicantId(String applicantId) {
@@ -41,5 +52,9 @@ public class BoothReservationRepository {
 
   public BoothReservation save(BoothReservation reservation) {
     return boothReservationDataSource.save(reservation);
+  }
+
+  public BoothReservation update(BoothReservation reservation) {
+    return boothReservationDataSource.update(reservation);
   }
 }

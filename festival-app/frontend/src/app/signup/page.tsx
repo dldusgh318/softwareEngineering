@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import SiteHeader from "@/components/SiteHeader";
 import { useAuth } from "@/providers/AuthProvider";
+import type { AuthRole } from "@/types/auth.types";
 import { getAuthErrorMessage } from "@/utils/auth-error";
 
 export default function SignupPage() {
@@ -14,6 +15,7 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<AuthRole>("USER");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -23,7 +25,7 @@ export default function SignupPage() {
     setIsSubmitting(true);
 
     try {
-      await signup({ name, email, password });
+      await signup({ name, email, password, role });
       router.replace("/");
     } catch (error) {
       setErrorMessage(await getAuthErrorMessage(error));
@@ -92,6 +94,22 @@ export default function SignupPage() {
                 placeholder="비밀번호를 입력하세요"
                 className="focus:border-brand-cream h-12 rounded-2xl border border-white/14 bg-white/10 px-4 text-white transition outline-none placeholder:text-white/36 focus:bg-white/14"
               />
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-bold text-white/74">계정 타입</span>
+              <select
+                className="focus:border-brand-cream h-12 rounded-2xl border border-white/14 bg-white/10 px-4 text-white transition outline-none focus:bg-white/14"
+                onChange={(event) => setRole(event.target.value as AuthRole)}
+                value={role}
+              >
+                <option className="text-zinc-950" value="USER">
+                  일반 사용자
+                </option>
+                <option className="text-zinc-950" value="ADMIN">
+                  관리자
+                </option>
+              </select>
             </label>
 
             {errorMessage ? (

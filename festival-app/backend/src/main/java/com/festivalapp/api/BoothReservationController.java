@@ -34,4 +34,10 @@ public class BoothReservationController {
       @PathVariable String applicantId) {
     return ResponseEntity.ok(boothReservationService.getReservationsByApplicant(applicantId));
   }
+
+  @GetMapping("/{reservationId}")
+  ResponseEntity<BoothReservationResponse> getReservation(
+      @PathVariable String reservationId) {
+    return ResponseEntity.ok(boothReservationService.getReservation(reservationId));
+  }
 }

@@ -65,6 +65,11 @@ export function BoothReservationListPanel({
                   <span className="text-text-secondary mt-1 block text-sm">
                     신청 테이블 {reservation.requestedTables}개
                   </span>
+                  {reservation.qrCode ? (
+                    <span className="text-brand-mint-soft mt-2 block font-mono text-xs">
+                      {reservation.qrCode}
+                    </span>
+                  ) : null}
                 </span>
                 <span
                   className={`inline-flex h-8 shrink-0 items-center border px-3 text-xs font-bold ${boothReservationStatusStyles[reservation.status]}`}

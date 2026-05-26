@@ -43,6 +43,12 @@ public class BoothReservationService {
         .toList();
   }
 
+  public BoothReservationResponse getReservation(String reservationId) {
+    return boothReservationRepository.findById(reservationId)
+        .map(BoothReservationResponse::from)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "예약 정보를 찾을 수 없습니다."));
+  }
+
   private boolean isBlank(String value) {
     return value == null || value.isBlank();
   }
@@ -58,6 +64,7 @@ public class BoothReservationService {
         request.applicantName(),
         request.requestedTables(),
         BoothReservationStatus.PENDING_APPROVAL,
+        null,
         now,
         now);
   }

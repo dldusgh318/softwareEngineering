@@ -42,6 +42,30 @@ class BoothReservationRepositoryTest {
     assertThat(repository.sumActiveRequestedTablesByBoothId("booth-1")).isEqualTo(2);
   }
 
+  @Test
+  void findByStatusReturnsMatchingReservations() {
+    BoothReservationRepository repository = repositoryWith(List.of(
+        reservation("reservation-1", "booth-1", "user-1", 2, BoothReservationStatus.PENDING_APPROVAL),
+        reservation("reservation-2", "booth-1", "user-2", 1, BoothReservationStatus.RESERVED)));
+
+    assertThat(repository.findByStatus(BoothReservationStatus.PENDING_APPROVAL))
+        .extracting(BoothReservation::id)
+        .containsExactly("reservation-1");
+  }
+
+  @Test
+  void updateReplacesExistingReservation() {
+    BoothReservation original =
+        reservation("reservation-1", "booth-1", "user-1", 2, BoothReservationStatus.PENDING_APPROVAL);
+    BoothReservationRepository repository = repositoryWith(List.of(original));
+    original.approve(LocalDateTime.of(2026, 5, 24, 11, 0));
+
+    repository.update(original);
+
+    assertThat(repository.findById("reservation-1")).contains(original);
+    assertThat(original.status()).isEqualTo(BoothReservationStatus.APPROVED);
+  }
+
   private BoothReservationRepository repositoryWith(List<BoothReservation> reservations) {
     List<BoothReservation> storage = new ArrayList<>(reservations);
     return new BoothReservationRepository(new TestBoothReservationDataSource(storage));
@@ -55,6 +79,6 @@ class BoothReservationRepositoryTest {
       BoothReservationStatus status) {
     LocalDateTime now = LocalDateTime.of(2026, 5, 24, 10, 0);
     return new BoothReservation(
-        id, boothId, applicantId, "홍길동", requestedTables, status, now, now);
+        id, boothId, applicantId, "홍길동", requestedTables, status, null, now, now);
   }
 }
