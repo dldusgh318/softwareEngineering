@@ -6,6 +6,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import javax.crypto.SecretKey;
 import org.springframework.stereotype.Component;
@@ -18,7 +20,7 @@ public class JwtTokenProvider {
 
   public JwtTokenProvider(JwtProperties jwtProperties) {
     this.jwtProperties = jwtProperties;
-    this.secretKey = Keys.hmacShaKeyFor(jwtProperties.secret().getBytes(StandardCharsets.UTF_8));
+    this.secretKey = Keys.hmacShaKeyFor(toSigningKey(jwtProperties.secret()));
   }
 
   public String createToken(User user) {
@@ -55,5 +57,19 @@ public class JwtTokenProvider {
     }
 
     return UserRole.valueOf(role);
+  }
+
+  private byte[] toSigningKey(String secret) {
+    byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
+
+    if (secretBytes.length >= 32) {
+      return secretBytes;
+    }
+
+    try {
+      return MessageDigest.getInstance("SHA-256").digest(secretBytes);
+    } catch (NoSuchAlgorithmException exception) {
+      throw new IllegalStateException("SHA-256 알고리즘을 사용할 수 없습니다.", exception);
+    }
   }
 }

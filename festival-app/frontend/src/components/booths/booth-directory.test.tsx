@@ -8,7 +8,12 @@ import {
   getBooths,
 } from "@/apis/booths/booth.api";
 import { BoothDirectory } from "@/components/booths/booth-directory";
+import type { AuthUser } from "@/types/auth.types";
 import type { Booth, BoothReservationApplication } from "@/types/booth/booths.types";
+
+const authState = vi.hoisted(() => ({
+  user: null as AuthUser | null,
+}));
 
 vi.mock("@/apis/booths/booth.api", () => ({
   createBoothReservation: vi.fn(),
@@ -18,6 +23,19 @@ vi.mock("@/apis/booths/booth.api", () => ({
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/booths",
+}));
+
+vi.mock("@/providers/AuthProvider", () => ({
+  useAuth: () => ({
+    accessToken: authState.user ? "access-token" : null,
+    user: authState.user,
+    isInitialized: true,
+    isAuthenticated: Boolean(authState.user),
+    login: vi.fn(),
+    signup: vi.fn(),
+    signupAdmin: vi.fn(),
+    logout: vi.fn(),
+  }),
 }));
 
 const booths: Booth[] = [
@@ -62,7 +80,7 @@ const mockedGetBoothReservationsByApplicant = vi.mocked(getBoothReservationsByAp
 describe("BoothDirectory", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    window.localStorage.clear();
+    authState.user = null;
     mockedGetBoothReservationsByApplicant.mockResolvedValue([]);
   });
 
@@ -131,7 +149,7 @@ describe("BoothDirectory", () => {
 
     expect(mockedCreateBoothReservation).toHaveBeenCalledWith({
       boothId: "booth-1",
-      applicantId: "demo-user-1",
+      applicantId: "user-1",
       applicantName: "홍길동",
       requestedTables: 2,
     });
@@ -204,12 +222,13 @@ describe("BoothDirectory", () => {
     mockedGetBooths.mockResolvedValue(booths);
     mockedGetBoothReservationsByApplicant.mockResolvedValue([reservationApplication()]);
 
-    render(<BoothDirectory />);
+    const { rerender } = render(<BoothDirectory />);
 
     expect(await screen.findByText("신청 테이블 2개")).toBeInTheDocument();
 
     await act(async () => {
-      window.localStorage.clear();
+      authState.user = null;
+      rerender(<BoothDirectory />);
     });
 
     expect(
@@ -287,11 +306,10 @@ function reservationApplication(
 }
 
 function setLoggedInApplicant() {
-  window.localStorage.setItem(
-    "festival-app-current-user",
-    JSON.stringify({
-      id: "demo-user-1",
-      name: "홍길동",
-    }),
-  );
+  authState.user = {
+    id: "user-1",
+    name: "홍길동",
+    email: "user1@hongik.ac.kr",
+    role: "USER",
+  };
 }

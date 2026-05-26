@@ -48,18 +48,18 @@ class AdminBoothReservationSecurityTest {
   }
 
   private String signupAndGetToken(String email, String role) throws Exception {
+    String signupPath = "ADMIN".equals(role) ? "/api/admin/auth/signup" : "/api/auth/signup";
     MvcResult result =
         mockMvc
             .perform(
-                post("/api/auth/signup")
+                post(signupPath)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         objectMapper.writeValueAsString(
                             Map.of(
                                 "name", "테스트",
                                 "email", email,
-                                "password", "password123",
-                                "role", role))))
+                                "password", "password123"))))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.accessToken", not(blankOrNullString())))
             .andReturn();

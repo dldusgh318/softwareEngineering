@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-import { getMe, login, signup } from "@/apis/auth/auth.api";
+import { getMe, login, signup, signupAdmin } from "@/apis/auth/auth.api";
 import type { AuthResponse, AuthUser, LoginRequest, SignupRequest } from "@/types/auth.types";
 
 type AuthContextValue = {
@@ -12,6 +12,7 @@ type AuthContextValue = {
   isAuthenticated: boolean;
   login: (request: LoginRequest) => Promise<AuthResponse>;
   signup: (request: SignupRequest) => Promise<AuthResponse>;
+  signupAdmin: (request: SignupRequest) => Promise<AuthResponse>;
   logout: () => void;
 };
 
@@ -25,6 +26,7 @@ const AuthContext = createContext<AuthContextValue>({
   isAuthenticated: false,
   login: () => Promise.reject(new Error("AuthProvider is not mounted.")),
   signup: () => Promise.reject(new Error("AuthProvider is not mounted.")),
+  signupAdmin: () => Promise.reject(new Error("AuthProvider is not mounted.")),
   logout: () => {},
 });
 
@@ -48,6 +50,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const handleSignup = useCallback(
     async (request: SignupRequest) => persistSession(await signup(request)),
+    [persistSession],
+  );
+
+  const handleAdminSignup = useCallback(
+    async (request: SignupRequest) => persistSession(await signupAdmin(request)),
     [persistSession],
   );
 
@@ -90,9 +97,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated: Boolean(accessToken && user),
       login: handleLogin,
       signup: handleSignup,
+      signupAdmin: handleAdminSignup,
       logout,
     }),
-    [accessToken, handleLogin, handleSignup, isInitialized, logout, user],
+    [accessToken, handleAdminSignup, handleLogin, handleSignup, isInitialized, logout, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
