@@ -1,29 +1,24 @@
 "use client";
 
-import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 
+import { getPerformances } from "@/apis/performances/performance.api";
+import PerformanceCard from "@/components/performances/PerformanceCard";
 import SiteHeader from "@/components/SiteHeader";
 import { useAuth } from "@/providers/AuthProvider";
-
-const performances = [
-  {
-    id: "performance-1",
-    title: "와우 스테이지 헤드라이너",
-    time: "2026.05.13 19:00",
-    location: "대운동장 메인 스테이지",
-    remainingSeats: 128,
-  },
-  {
-    id: "performance-2",
-    title: "동아리 밴드 쇼케이스",
-    time: "2026.05.14 18:00",
-    location: "학생회관 야외무대",
-    remainingSeats: 64,
-  },
-];
+import type { Performance } from "@/types/performance/performance.types";
 
 export default function PerformancesPage() {
   const { isAuthenticated, isInitialized, user } = useAuth();
+  const {
+    data: performances = [],
+    error,
+    isError,
+    isLoading,
+  } = useQuery<Performance[]>({
+    queryKey: ["performances"],
+    queryFn: ({ signal }) => getPerformances({ signal }),
+  });
 
   return (
     <main className="bg-brand-navy text-text-primary min-h-screen">
@@ -34,57 +29,54 @@ export default function PerformancesPage() {
           <p className="typo-caption text-brand-coral-soft mb-4 font-black">PERFORMANCE TICKETS</p>
           <h1 className="typo-title text-4xl sm:text-5xl">공연 예매</h1>
           <p className="typo-body text-text-secondary mt-4 max-w-2xl">
-            로그인한 사용자만 공연 예매를 진행할 수 있습니다.
+            축제 공연 일정과 잔여 좌석을 확인하고 상세 정보에서 예매 준비 상태를 확인하세요.
           </p>
         </div>
 
-        {!isInitialized ? (
-          <p className="text-text-secondary mt-10 text-sm font-semibold">
-            로그인 상태를 확인하는 중입니다.
-          </p>
-        ) : !isAuthenticated ? (
-          <section className="mt-8 max-w-xl rounded-3xl border border-white/14 bg-white/10 p-6 shadow-2xl shadow-black/10 backdrop-blur">
-            <h2 className="text-2xl font-black">로그인이 필요합니다</h2>
-            <p className="typo-caption text-text-muted mt-3">
-              공연 좌석 선점과 QR 티켓 발급은 계정 확인 후 진행됩니다.
-            </p>
-            <Link
-              href="/login?redirect=/performances"
-              className="bg-brand-coral hover:bg-brand-coral-soft hover:text-brand-navy mt-6 inline-flex h-11 items-center rounded-full px-5 text-sm font-black text-white transition"
-            >
-              로그인하고 예매하기
-            </Link>
-          </section>
-        ) : (
-          <section className="mt-8">
-            <p className="typo-caption text-text-muted mb-4">
-              {user?.name}님, 예매 가능한 공연입니다.
-            </p>
+        <section className="mt-8">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-2xl font-black">공연 목록</h2>
+              <p className="typo-caption text-text-muted mt-1">
+                {isInitialized && isAuthenticated && user
+                  ? `${user.name}님, 예매 가능한 공연입니다.`
+                  : "로그인 전에도 공연 정보와 잔여 좌석을 확인할 수 있습니다."}
+              </p>
+            </div>
+            <span className="text-text-muted text-sm font-bold">{performances.length}개 공연</span>
+          </div>
+
+          {isLoading && (
             <div className="grid gap-4 md:grid-cols-2">
-              {performances.map((performance) => (
-                <article
-                  key={performance.id}
-                  className="rounded-3xl border border-white/14 bg-white/10 p-5 shadow-2xl shadow-black/10 backdrop-blur"
-                >
-                  <h2 className="text-xl font-black">{performance.title}</h2>
-                  <p className="text-text-muted mt-3 text-sm font-semibold">{performance.time}</p>
-                  <p className="text-text-secondary mt-1 text-sm">{performance.location}</p>
-                  <div className="mt-5 flex items-center justify-between gap-3">
-                    <span className="text-brand-cream text-sm font-black">
-                      잔여 {performance.remainingSeats}석
-                    </span>
-                    <button
-                      type="button"
-                      className="bg-brand-coral hover:bg-brand-coral-soft hover:text-brand-navy h-10 rounded-full px-4 text-sm font-black text-white transition"
-                    >
-                      예매하기
-                    </button>
-                  </div>
-                </article>
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="h-56 animate-pulse rounded-2xl border border-white/10 bg-white/10"
+                />
               ))}
             </div>
-          </section>
-        )}
+          )}
+
+          {!isLoading && isError && (
+            <div className="border-brand-coral/30 bg-brand-coral/10 text-brand-coral-soft rounded-2xl border p-5 text-sm font-bold">
+              {error instanceof Error ? error.message : "공연 정보를 불러오지 못했습니다."}
+            </div>
+          )}
+
+          {!isLoading && !isError && performances.length === 0 && (
+            <p className="text-text-muted rounded-2xl border border-white/12 bg-white/[0.07] py-12 text-center">
+              등록된 공연 정보가 없습니다.
+            </p>
+          )}
+
+          {!isLoading && !isError && performances.length > 0 && (
+            <div className="grid gap-4 md:grid-cols-2">
+              {performances.map((performance) => (
+                <PerformanceCard key={performance.id} performance={performance} />
+              ))}
+            </div>
+          )}
+        </section>
       </section>
     </main>
   );
