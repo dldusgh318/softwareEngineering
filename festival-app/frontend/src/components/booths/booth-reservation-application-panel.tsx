@@ -164,6 +164,19 @@ export function BoothReservationApplicationPanel({
                 <BoothReservationQr qrCode={selectedBoothReservation.qrCode} />
               </div>
             ) : null}
+            {selectedBoothReservation.status === "QR_FAILED" ? (
+              <div className="mt-2 border border-rose-300/35 bg-rose-500/12 p-3 text-rose-100">
+                <p className="font-bold">QR 발급 실패</p>
+                <p className="mt-1 text-rose-100/85">
+                  관리자 재승인 후 QR 재발급이 필요한 상태입니다.
+                </p>
+                {selectedBoothReservation.compensationLogs[0] ? (
+                  <p className="mt-2 text-xs text-rose-100/75">
+                    {selectedBoothReservation.compensationLogs[0].reason}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
           </dl>
         ) : (
           <p className="text-text-secondary mt-2 text-sm">아직 이 부스에 신청한 예약이 없습니다.</p>

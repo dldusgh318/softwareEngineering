@@ -238,6 +238,32 @@ describe("BoothDirectory", () => {
       screen.getByLabelText("예약 QR http://localhost:3000/booths/reservations/reservation-1"),
     ).toBeInTheDocument();
   });
+
+  it("shows QR failure status and retry guidance for failed reservation", async () => {
+    setLoggedInApplicant();
+    mockedGetBooths.mockResolvedValue(booths);
+    mockedGetBoothReservationsByApplicant.mockResolvedValue([
+      reservationApplication({
+        status: "QR_FAILED",
+        statusDescription: "QR 발급 실패",
+        compensationLogs: [
+          {
+            step: "APPROVAL_ROLLBACK",
+            reason: "QR 발급 시뮬레이션 실패",
+            fromStatus: "APPROVED",
+            toStatus: "QR_FAILED",
+            createdAt: "2026-05-24T10:05:00",
+          },
+        ],
+      }),
+    ]);
+
+    render(<BoothDirectory />);
+
+    expect(await screen.findAllByText("QR 발급 실패")).not.toHaveLength(0);
+    expect(screen.getAllByText("관리자 재승인 후 QR 재발급이 필요합니다.")).not.toHaveLength(0);
+    expect(screen.getAllByText("QR 발급 시뮬레이션 실패")).not.toHaveLength(0);
+  });
 });
 
 function reservationApplication(
@@ -253,6 +279,7 @@ function reservationApplication(
     statusDescription: "관리자 승인 대기",
     qrCode: null,
     sagaLogs: [],
+    compensationLogs: [],
     createdAt: "2026-05-24T10:00:00",
     updatedAt: "2026-05-24T10:00:00",
     ...overrides,

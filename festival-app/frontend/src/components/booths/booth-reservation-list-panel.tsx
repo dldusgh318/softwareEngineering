@@ -4,7 +4,11 @@ import {
   boothReservationStatusLabels,
   boothReservationStatusStyles,
 } from "@/constants/booths/booth.constants";
-import type { Booth, BoothReservationApplication } from "@/types/booth/booths.types";
+import type {
+  Booth,
+  BoothReservationApplication,
+  BoothReservationCompensationLog,
+} from "@/types/booth/booths.types";
 
 type BoothReservationListPanelProps = {
   booths: Booth[];
@@ -70,6 +74,9 @@ export function BoothReservationListPanel({
                       {reservation.qrCode}
                     </span>
                   ) : null}
+                  {reservation.status === "QR_FAILED" ? (
+                    <QrFailureSummary compensationLog={reservation.compensationLogs[0]} />
+                  ) : null}
                 </span>
                 <span
                   className={`inline-flex h-8 shrink-0 items-center border px-3 text-xs font-bold ${boothReservationStatusStyles[reservation.status]}`}
@@ -85,5 +92,23 @@ export function BoothReservationListPanel({
         <p className="text-text-secondary mt-4 text-sm">아직 신청한 부스 예약이 없습니다.</p>
       )}
     </section>
+  );
+}
+
+function QrFailureSummary({
+  compensationLog,
+}: {
+  compensationLog?: BoothReservationCompensationLog;
+}) {
+  return (
+    <span className="mt-3 block border border-rose-300/35 bg-rose-500/12 p-3 text-sm text-rose-100">
+      <span className="block font-bold">QR 발급 실패</span>
+      <span className="mt-1 block text-rose-100/85">관리자 재승인 후 QR 재발급이 필요합니다.</span>
+      {compensationLog ? (
+        <span className="mt-2 block text-xs text-rose-100/75">
+          {compensationLog.reason} · {compensationLog.fromStatus} → {compensationLog.toStatus}
+        </span>
+      ) : null}
+    </span>
   );
 }
