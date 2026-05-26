@@ -50,6 +50,8 @@ public class SecurityConfig {
                         "/api/booths/**",
                         "/api/timeline",
                         "/api/timeline/**",
+                        "/api/performances",
+                        "/api/performances/**",
                         "/api/map-locations",
                         "/api/map-locations/**")
                     .permitAll()
