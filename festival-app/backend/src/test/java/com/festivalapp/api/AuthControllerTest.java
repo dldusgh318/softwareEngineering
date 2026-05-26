@@ -41,7 +41,25 @@ class AuthControllerTest {
                             "password", "password123"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.accessToken", not(blankOrNullString())))
-        .andExpect(jsonPath("$.user.email").value("signup-success@hongik.ac.kr"));
+        .andExpect(jsonPath("$.user.email").value("signup-success@hongik.ac.kr"))
+        .andExpect(jsonPath("$.user.role").value("USER"));
+  }
+
+  @Test
+  void adminSignupReturnsAdminRole() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/auth/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "name", "관리자",
+                            "email", "admin-signup@hongik.ac.kr",
+                            "password", "password123",
+                            "role", "ADMIN"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.role").value("ADMIN"));
   }
 
   @Test

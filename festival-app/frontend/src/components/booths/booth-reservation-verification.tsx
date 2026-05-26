@@ -9,7 +9,7 @@ import {
   boothReservationStatusLabels,
   boothReservationStatusStyles,
 } from "@/constants/booths/booth.constants";
-import type { BoothReservationApplication } from "@/types/booths.types";
+import type { BoothReservationApplication } from "@/types/booth/booths.types";
 
 type BoothReservationVerificationProps = {
   reservationId: string;

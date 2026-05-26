@@ -4,11 +4,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { approveBoothReservation, getPendingBoothReservations } from "@/apis/booths/booth.api";
 import { AdminBoothReservationApproval } from "@/components/booths/admin-booth-reservation-approval";
+import { useAuth } from "@/providers/AuthProvider";
 import type { BoothReservationApplication } from "@/types/booth/booths.types";
 
 vi.mock("@/apis/booths/booth.api", () => ({
   approveBoothReservation: vi.fn(),
   getPendingBoothReservations: vi.fn(),
+}));
+
+vi.mock("@/providers/AuthProvider", () => ({
+  useAuth: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -17,10 +22,47 @@ vi.mock("next/navigation", () => ({
 
 const mockedGetPendingBoothReservations = vi.mocked(getPendingBoothReservations);
 const mockedApproveBoothReservation = vi.mocked(approveBoothReservation);
+const mockedUseAuth = vi.mocked(useAuth);
 
 describe("AdminBoothReservationApproval", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockedUseAuth.mockReturnValue({
+      accessToken: "admin-token",
+      isAuthenticated: true,
+      isInitialized: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      signup: vi.fn(),
+      user: {
+        id: "admin-1",
+        name: "관리자",
+        email: "admin@hongik.ac.kr",
+        role: "ADMIN",
+      },
+    });
+  });
+
+  it("blocks non-admin user from loading pending reservations", () => {
+    mockedUseAuth.mockReturnValue({
+      accessToken: "user-token",
+      isAuthenticated: true,
+      isInitialized: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      signup: vi.fn(),
+      user: {
+        id: "user-1",
+        name: "홍길동",
+        email: "user@hongik.ac.kr",
+        role: "USER",
+      },
+    });
+
+    render(<AdminBoothReservationApproval />);
+
+    expect(screen.getByText("관리자 권한이 필요합니다")).toBeInTheDocument();
+    expect(mockedGetPendingBoothReservations).not.toHaveBeenCalled();
   });
 
   it("shows pending reservation list", async () => {

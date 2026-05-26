@@ -3,6 +3,7 @@ package com.festivalapp.service.auth;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.festivalapp.domain.auth.UserRole;
 import com.festivalapp.dto.auth.AuthResponse;
 import com.festivalapp.dto.auth.LoginRequest;
 import com.festivalapp.dto.auth.SignupRequest;
@@ -30,7 +31,21 @@ class AuthServiceTest {
     assertThat(response.accessToken()).isNotBlank();
     assertThat(response.user().name()).isEqualTo("홍길동");
     assertThat(response.user().email()).isEqualTo("wow@hongik.ac.kr");
+    assertThat(response.user().role()).isEqualTo(UserRole.USER);
     assertThat(userRepository.findByEmail("wow@hongik.ac.kr")).isPresent();
+  }
+
+  @Test
+  void signupCreatesAdminUserWhenRoleIsAdmin() {
+    AuthResponse response =
+        authService.signup(
+            new SignupRequest("관리자", "admin@hongik.ac.kr", "password123", UserRole.ADMIN));
+
+    assertThat(response.user().role()).isEqualTo(UserRole.ADMIN);
+    assertThat(userRepository.findByEmail("admin@hongik.ac.kr"))
+        .get()
+        .extracting("role")
+        .isEqualTo(UserRole.ADMIN);
   }
 
   @Test

@@ -20,6 +20,7 @@ export type Booth = {
 export type BoothReservationStatus =
   | "PENDING_APPROVAL"
   | "APPROVED"
+  | "RESERVED"
   | "CHECKED_IN"
   | "COMPLETED"
   | "CANCELLED";
@@ -56,7 +57,7 @@ export type BoothReservationApprovalRequest = {
   approverName: string;
 };
 
-export type QrFailureReservationStatus = BoothReservationStatus | "QR_FAILED" | "RESERVED";
+export type QrFailureReservationStatus = BoothReservationStatus | "QR_FAILED";
 
 export type CompensationLog = {
   id: string;

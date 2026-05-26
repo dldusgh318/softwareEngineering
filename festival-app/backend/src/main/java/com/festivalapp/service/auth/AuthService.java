@@ -1,6 +1,7 @@
 package com.festivalapp.service.auth;
 
 import com.festivalapp.domain.auth.User;
+import com.festivalapp.domain.auth.UserRole;
 import com.festivalapp.dto.auth.AuthResponse;
 import com.festivalapp.dto.auth.LoginRequest;
 import com.festivalapp.dto.auth.SignupRequest;
@@ -33,7 +34,8 @@ public class AuthService {
             UUID.randomUUID().toString(),
             request.name(),
             email,
-            passwordEncoder.encode(request.password()));
+            passwordEncoder.encode(request.password()),
+            resolveRole(request.role()));
     User savedUser = userRepository.save(user);
     return toAuthResponse(savedUser);
   }
@@ -57,6 +59,10 @@ public class AuthService {
 
   private AuthResponse toAuthResponse(User user) {
     return new AuthResponse(jwtTokenProvider.createToken(user), UserResponse.from(user));
+  }
+
+  private UserRole resolveRole(UserRole requestedRole) {
+    return requestedRole == null ? UserRole.USER : requestedRole;
   }
 
   private String normalizeEmail(String email) {

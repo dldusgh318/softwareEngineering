@@ -1,7 +1,10 @@
+export type AuthRole = "USER" | "ADMIN";
+
 export type AuthUser = {
   id: string;
   name: string;
   email: string;
+  role: AuthRole;
 };
 
 export type AuthResponse = {
@@ -18,4 +21,5 @@ export type SignupRequest = {
   name: string;
   email: string;
   password: string;
+  role: AuthRole;
 };

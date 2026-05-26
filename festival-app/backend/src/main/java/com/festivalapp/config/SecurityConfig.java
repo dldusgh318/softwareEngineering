@@ -53,6 +53,8 @@ public class SecurityConfig {
                         "/api/map-locations",
                         "/api/map-locations/**")
                     .permitAll()
+                    .requestMatchers("/api/admin/**")
+                    .hasRole("ADMIN")
                     .anyRequest()
                     .authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

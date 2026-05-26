@@ -16,6 +16,7 @@ type AuthContextValue = {
 };
 
 const AUTH_TOKEN_KEY = "festival_auth_token";
+const AUTH_ROLE_COOKIE_KEY = "festival_auth_role";
 
 const AuthContext = createContext<AuthContextValue>({
   accessToken: null,
@@ -34,6 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const persistSession = useCallback((response: AuthResponse) => {
     localStorage.setItem(AUTH_TOKEN_KEY, response.accessToken);
+    document.cookie = `${AUTH_ROLE_COOKIE_KEY}=${response.user.role}; path=/; SameSite=Lax`;
     setAccessToken(response.accessToken);
     setUser(response.user);
     return response;
@@ -51,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(() => {
     localStorage.removeItem(AUTH_TOKEN_KEY);
+    document.cookie = `${AUTH_ROLE_COOKIE_KEY}=; path=/; max-age=0; SameSite=Lax`;
     setAccessToken(null);
     setUser(null);
   }, []);
@@ -66,9 +69,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setAccessToken(storedToken);
     getMe(storedToken)
-      .then(setUser)
+      .then((currentUser) => {
+        document.cookie = `${AUTH_ROLE_COOKIE_KEY}=${currentUser.role}; path=/; SameSite=Lax`;
+        setUser(currentUser);
+      })
       .catch(() => {
         localStorage.removeItem(AUTH_TOKEN_KEY);
+        document.cookie = `${AUTH_ROLE_COOKIE_KEY}=; path=/; max-age=0; SameSite=Lax`;
         setAccessToken(null);
         setUser(null);
       })
