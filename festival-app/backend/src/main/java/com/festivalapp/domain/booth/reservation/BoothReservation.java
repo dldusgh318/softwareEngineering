@@ -40,9 +40,20 @@ public class BoothReservation {
     updatedAt = now;
   }
 
+  public boolean canApprove() {
+    return status == BoothReservationStatus.PENDING_APPROVAL
+        || status == BoothReservationStatus.QR_FAILED;
+  }
+
   public void reserve(String issuedQrCode, LocalDateTime now) {
     status = BoothReservationStatus.RESERVED;
     qrCode = issuedQrCode;
+    updatedAt = now;
+  }
+
+  public void compensateApprovalAfterQrFailure(LocalDateTime now) {
+    status = BoothReservationStatus.QR_FAILED;
+    qrCode = null;
     updatedAt = now;
   }
 

@@ -85,6 +85,7 @@ class BoothReservationControllerTest {
         "관리자 승인 대기",
         null,
         List.of(),
+        List.of(),
         now,
         now);
   }
