@@ -51,6 +51,11 @@ public class BoothReservation {
     updatedAt = now;
   }
 
+  public void checkIn(LocalDateTime now) {
+    status = BoothReservationStatus.CHECKED_IN;
+    updatedAt = now;
+  }
+
   public void compensateApprovalAfterQrFailure(LocalDateTime now) {
     status = BoothReservationStatus.QR_FAILED;
     qrCode = null;

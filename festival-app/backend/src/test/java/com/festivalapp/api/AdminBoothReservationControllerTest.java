@@ -9,8 +9,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.festivalapp.dto.BoothReservationApprovalRequest;
+import com.festivalapp.dto.BoothReservationCheckInRequest;
 import com.festivalapp.dto.BoothReservationResponse;
 import com.festivalapp.service.BoothReservationApprovalService;
+import com.festivalapp.service.BoothReservationCheckInService;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,12 +25,14 @@ class AdminBoothReservationControllerTest {
 
   private final BoothReservationApprovalService approvalService =
       mock(BoothReservationApprovalService.class);
+  private final BoothReservationCheckInService checkInService =
+      mock(BoothReservationCheckInService.class);
   private MockMvc mockMvc;
 
   @BeforeEach
   void setUp() {
     mockMvc = MockMvcBuilders
-        .standaloneSetup(new AdminBoothReservationController(approvalService))
+        .standaloneSetup(new AdminBoothReservationController(approvalService, checkInService))
         .build();
   }
 
@@ -41,6 +45,20 @@ class AdminBoothReservationControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].id").value("reservation-1"))
         .andExpect(jsonPath("$[0].status").value("PENDING_APPROVAL"));
+  }
+
+  @Test
+  void getApprovedReservationsReturnsApprovedFlowReservations() throws Exception {
+    given(approvalService.getApprovedReservations())
+        .willReturn(List.of(reservationResponse(
+            "reservation-1",
+            "RESERVED",
+            "http://localhost:3000/booths/reservations/reservation-1")));
+
+    mockMvc.perform(get("/api/admin/booth-reservations/approved"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].id").value("reservation-1"))
+        .andExpect(jsonPath("$[0].status").value("RESERVED"));
   }
 
   @Test
@@ -86,6 +104,26 @@ class AdminBoothReservationControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("QR_FAILED"))
         .andExpect(jsonPath("$.qrCode").value(nullValue()));
+  }
+
+  @Test
+  void checkInReservationReturnsCheckedInReservation() throws Exception {
+    given(checkInService.checkIn(org.mockito.ArgumentMatchers.any(BoothReservationCheckInRequest.class)))
+        .willReturn(reservationResponse(
+            "reservation-1",
+            "CHECKED_IN",
+            "http://localhost:3000/booths/reservations/reservation-1"));
+
+    mockMvc.perform(post("/api/admin/booth-reservations/check-in")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("""
+                {
+                  "qrCode": "http://localhost:3000/booths/reservations/reservation-1"
+                }
+                """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value("reservation-1"))
+        .andExpect(jsonPath("$.status").value("CHECKED_IN"));
   }
 
   private BoothReservationResponse reservationResponse(String id, String status, String qrCode) {

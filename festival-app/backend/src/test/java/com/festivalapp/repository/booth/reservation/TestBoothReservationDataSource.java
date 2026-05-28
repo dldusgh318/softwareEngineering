@@ -3,7 +3,9 @@ package com.festivalapp.repository.booth.reservation;
 import com.festivalapp.domain.booth.reservation.BoothReservation;
 import com.festivalapp.domain.booth.reservation.BoothReservationStatus;
 import com.festivalapp.repository.booth.reservation.datasource.BoothReservationDataSource;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class TestBoothReservationDataSource implements BoothReservationDataSource {
@@ -52,6 +54,33 @@ public class TestBoothReservationDataSource implements BoothReservationDataSourc
     }
 
     reservations.add(reservation);
+    return reservation;
+  }
+
+  @Override
+  public BoothReservation checkInByQrCode(String qrCode, LocalDateTime checkedInAt) {
+    BoothReservation reservation = reservations.stream()
+        .filter(savedReservation -> Objects.equals(savedReservation.qrCode(), qrCode))
+        .findFirst()
+        .orElseThrow(BoothReservationInvalidQrException::new);
+
+    if (reservation.status() == BoothReservationStatus.CHECKED_IN) {
+      throw new BoothReservationAlreadyCheckedInException();
+    }
+
+    if (reservation.status() == BoothReservationStatus.CANCELLED) {
+      throw new BoothReservationCancelledException();
+    }
+
+    if (reservation.status() == BoothReservationStatus.COMPLETED) {
+      throw new BoothReservationQrExpiredException();
+    }
+
+    if (reservation.status() != BoothReservationStatus.RESERVED) {
+      throw new BoothReservationStatusNotCheckInReadyException();
+    }
+
+    reservation.checkIn(checkedInAt);
     return reservation;
   }
 
