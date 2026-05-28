@@ -3,6 +3,7 @@ package com.festivalapp.repository.booth.reservation;
 import com.festivalapp.domain.booth.reservation.BoothReservation;
 import com.festivalapp.domain.booth.reservation.BoothReservationStatus;
 import com.festivalapp.repository.booth.reservation.datasource.BoothReservationDataSource;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +57,10 @@ public class BoothReservationRepository {
 
   public BoothReservation saveIfAvailable(BoothReservation reservation, int availableTables) {
     return boothReservationDataSource.saveIfAvailable(reservation, availableTables);
+  }
+
+  public BoothReservation checkInByQrCode(String qrCode, LocalDateTime checkedInAt) {
+    return boothReservationDataSource.checkInByQrCode(qrCode, checkedInAt);
   }
 
   public BoothReservation update(BoothReservation reservation) {

@@ -98,6 +98,19 @@ class BoothReservationServiceTest {
   }
 
   @Test
+  void getReservationsByApplicantReflectsCheckedInStatus() {
+    List<BoothReservation> reservations = new ArrayList<>(List.of(
+        reservation("reservation-1", "booth-1", "user-1", 1, BoothReservationStatus.CHECKED_IN)));
+    BoothReservationService service = serviceWith(List.of(booth), reservations);
+
+    List<BoothReservationResponse> responses = service.getReservationsByApplicant("user-1");
+
+    assertThat(responses).hasSize(1);
+    assertThat(responses.get(0).status()).isEqualTo("CHECKED_IN");
+    assertThat(responses.get(0).statusDescription()).isEqualTo("현장 체크인 완료");
+  }
+
+  @Test
   void getReservationReturnsReservationById() {
     List<BoothReservation> reservations = new ArrayList<>(List.of(
         reservation("reservation-1", "booth-1", "user-1", 1, BoothReservationStatus.RESERVED)));

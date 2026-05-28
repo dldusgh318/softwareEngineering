@@ -173,6 +173,24 @@ QR 발급 값은 프론트엔드 예약 확인 페이지 URL입니다.
 
 로컬 기본값은 `http://localhost:3000`이며, 배포 환경에서는 `app.frontend-base-url` 설정으로 변경합니다.
 
+### 관리자 QR 체크인
+
+```http
+POST /api/admin/booth-reservations/check-in
+```
+
+Request Example:
+
+```json
+{
+  "qrCode": "http://localhost:3000/booths/reservations/reservation-1"
+}
+```
+
+저장된 QR 값과 일치하는 `RESERVED` 상태 예약만 체크인할 수 있습니다. 체크인 성공 시 예약 상태는
+`CHECKED_IN`으로 변경되며, 이미 체크인된 예약, 취소된 예약, 만료된 QR, 예약 완료 전 상태의 예약은
+`409 Conflict`를 반환합니다. 저장된 예약 QR과 일치하지 않는 값은 `400 Bad Request`를 반환합니다.
+
 ## 부스 예약 Saga 기록
 
 이슈 #6은 부스 예약 Saga의 시작점입니다.
@@ -190,6 +208,23 @@ QR 발급 값은 프론트엔드 예약 확인 페이지 URL입니다.
 - 사용자별 예약 상태 조회 API로 Saga 시작 상태를 확인할 수 있습니다.
 - 관리자는 승인 대기 예약 목록을 조회하고, 승인 API를 통해 QR 발급까지 이어지는 Saga를 시작할 수 있습니다.
 - QR 발급이 성공하면 예약 상태는 `RESERVED`로 전환되고, 승인 응답의 `sagaLogs`로 진행 단계를 확인할 수 있습니다.
+
+## 이슈 #9 QR 기반 체크인 기록
+
+QR 기반 체크인은 QR 발급 Saga가 완료된 뒤 실제 현장 이용 상태를 관리하는 단계입니다.
+
+```text
+PENDING_APPROVAL → APPROVED → RESERVED → CHECKED_IN
+```
+
+이번 구현에서는 체크인 요청을 `POST /api/admin/booth-reservations/check-in`으로 분리했습니다.
+
+- 체크인 API는 요청 QR 값이 저장된 예약의 QR 값과 정확히 일치하는지 검증합니다.
+- `RESERVED` 상태의 예약만 체크인할 수 있습니다.
+- 체크인 성공 시 예약 상태를 `CHECKED_IN`으로 변경합니다.
+- 이미 체크인된 예약은 중복 체크인을 막고 `409 Conflict`를 반환합니다.
+- 잘못된 QR은 `400 Bad Request`, 취소된 예약과 만료된 QR은 `409 Conflict`를 반환합니다.
+- 사용자별 예약 상태 조회 API는 같은 응답 DTO를 사용하므로 `CHECKED_IN` 상태와 설명을 그대로 반환합니다.
 
 ## 이슈 #7 외부 행위자 개입 기록
 
@@ -259,6 +294,18 @@ QR 발급 값은 프론트엔드 예약 확인 페이지 URL입니다.
   - 상태별 예약 조회와 예약 업데이트가 정상 동작하는지 검증합니다.
 - `InMemoryQrCodeIssuerTest`
   - QR 발급 값이 예약 확인 URL인지 검증합니다.
+
+### Backend - 이슈 #9
+
+- `AdminBoothReservationControllerTest`
+  - 관리자 QR 체크인 API가 `CHECKED_IN` 예약을 반환하는지 검증합니다.
+- `BoothReservationCheckInServiceTest`
+  - 정상 QR 체크인 시 예약 상태가 `CHECKED_IN`으로 변경되는지 검증합니다.
+  - 잘못된 QR, 중복 체크인, 취소된 예약, 만료된 QR, 예약 완료 전 상태의 체크인을 차단하는지 검증합니다.
+- `BoothReservationRepositoryTest`
+  - QR 기반 체크인 상태 변경과 잘못된 QR, 중복 체크인 차단을 검증합니다.
+- `BoothReservationStatusTest`
+  - `CHECKED_IN` 상태 설명이 함께 제공되는지 검증합니다.
 
 ### Frontend
 

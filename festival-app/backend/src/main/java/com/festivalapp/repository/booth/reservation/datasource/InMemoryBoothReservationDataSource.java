@@ -2,10 +2,17 @@ package com.festivalapp.repository.booth.reservation.datasource;
 
 import com.festivalapp.domain.booth.reservation.BoothReservation;
 import com.festivalapp.domain.booth.reservation.BoothReservationStatus;
+import com.festivalapp.repository.booth.reservation.BoothReservationAlreadyCheckedInException;
 import com.festivalapp.repository.booth.reservation.BoothReservationCapacityExceededException;
+import com.festivalapp.repository.booth.reservation.BoothReservationCancelledException;
+import com.festivalapp.repository.booth.reservation.BoothReservationInvalidQrException;
+import com.festivalapp.repository.booth.reservation.BoothReservationQrExpiredException;
+import com.festivalapp.repository.booth.reservation.BoothReservationStatusNotCheckInReadyException;
 import com.festivalapp.repository.booth.reservation.DuplicateBoothReservationException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
@@ -50,6 +57,18 @@ public class InMemoryBoothReservationDataSource implements BoothReservationDataS
   }
 
   @Override
+  public synchronized BoothReservation checkInByQrCode(String qrCode, LocalDateTime checkedInAt) {
+    BoothReservation reservation = reservations.stream()
+        .filter(savedReservation -> Objects.equals(savedReservation.qrCode(), qrCode))
+        .findFirst()
+        .orElseThrow(BoothReservationInvalidQrException::new);
+
+    validateCheckInReady(reservation);
+    reservation.checkIn(checkedInAt);
+    return reservation;
+  }
+
+  @Override
   public synchronized BoothReservation update(BoothReservation reservation) {
     for (int index = 0; index < reservations.size(); index++) {
       if (reservations.get(index).id().equals(reservation.id())) {
@@ -79,5 +98,23 @@ public class InMemoryBoothReservationDataSource implements BoothReservationDataS
 
   private boolean isActive(BoothReservation reservation) {
     return reservation.status() != BoothReservationStatus.CANCELLED;
+  }
+
+  private void validateCheckInReady(BoothReservation reservation) {
+    if (reservation.status() == BoothReservationStatus.CHECKED_IN) {
+      throw new BoothReservationAlreadyCheckedInException();
+    }
+
+    if (reservation.status() == BoothReservationStatus.CANCELLED) {
+      throw new BoothReservationCancelledException();
+    }
+
+    if (reservation.status() == BoothReservationStatus.COMPLETED) {
+      throw new BoothReservationQrExpiredException();
+    }
+
+    if (reservation.status() != BoothReservationStatus.RESERVED) {
+      throw new BoothReservationStatusNotCheckInReadyException();
+    }
   }
 }

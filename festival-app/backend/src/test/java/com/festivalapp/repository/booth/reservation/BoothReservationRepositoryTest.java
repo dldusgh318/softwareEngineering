@@ -81,6 +81,44 @@ class BoothReservationRepositoryTest {
   }
 
   @Test
+  void checkInByQrCodeChangesReservedReservationToCheckedIn() {
+    BoothReservation reservation =
+        reservation("reservation-1", "booth-1", "user-1", 2, BoothReservationStatus.RESERVED);
+    reservation.reserve("http://localhost:3000/booths/reservations/reservation-1", fixedNow());
+    BoothReservationRepository repository = repositoryWith(List.of(reservation));
+
+    BoothReservation checkedInReservation = repository.checkInByQrCode(
+        "http://localhost:3000/booths/reservations/reservation-1",
+        LocalDateTime.of(2026, 5, 24, 12, 0));
+
+    assertThat(checkedInReservation.status()).isEqualTo(BoothReservationStatus.CHECKED_IN);
+  }
+
+  @Test
+  void checkInByQrCodeRejectsInvalidQr() {
+    BoothReservationRepository repository = repositoryWith(List.of());
+
+    assertThatThrownBy(() -> repository.checkInByQrCode("invalid-qr", fixedNow()))
+        .isInstanceOf(BoothReservationInvalidQrException.class)
+        .hasMessage("유효하지 않은 QR입니다.");
+  }
+
+  @Test
+  void checkInByQrCodeRejectsAlreadyCheckedInReservation() {
+    BoothReservation reservation =
+        reservation("reservation-1", "booth-1", "user-1", 2, BoothReservationStatus.RESERVED);
+    reservation.reserve("http://localhost:3000/booths/reservations/reservation-1", fixedNow());
+    reservation.checkIn(fixedNow());
+    BoothReservationRepository repository = repositoryWith(List.of(reservation));
+
+    assertThatThrownBy(() -> repository.checkInByQrCode(
+        "http://localhost:3000/booths/reservations/reservation-1",
+        fixedNow()))
+        .isInstanceOf(BoothReservationAlreadyCheckedInException.class)
+        .hasMessage("이미 체크인된 예약입니다.");
+  }
+
+  @Test
   void findByStatusReturnsMatchingReservations() {
     BoothReservationRepository repository = repositoryWith(List.of(
         reservation("reservation-1", "booth-1", "user-1", 2, BoothReservationStatus.PENDING_APPROVAL),
@@ -115,8 +153,12 @@ class BoothReservationRepositoryTest {
       String applicantId,
       int requestedTables,
       BoothReservationStatus status) {
-    LocalDateTime now = LocalDateTime.of(2026, 5, 24, 10, 0);
+    LocalDateTime now = fixedNow();
     return new BoothReservation(
         id, boothId, applicantId, "홍길동", requestedTables, status, null, now, now);
+  }
+
+  private LocalDateTime fixedNow() {
+    return LocalDateTime.of(2026, 5, 24, 10, 0);
   }
 }

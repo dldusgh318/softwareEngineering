@@ -23,4 +23,10 @@ class BoothReservationStatusTest {
     assertThat(BoothReservationStatus.QR_FAILED.getDescription())
         .isEqualTo("QR 발급 실패");
   }
+
+  @Test
+  void checkedInHasDescription() {
+    assertThat(BoothReservationStatus.CHECKED_IN.getDescription())
+        .isEqualTo("현장 체크인 완료");
+  }
 }
