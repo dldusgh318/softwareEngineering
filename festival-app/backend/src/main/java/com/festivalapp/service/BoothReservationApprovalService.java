@@ -1,6 +1,7 @@
 package com.festivalapp.service;
 
 import com.festivalapp.domain.booth.reservation.BoothReservation;
+import com.festivalapp.domain.booth.reservation.BoothReservationStatus;
 import com.festivalapp.dto.BoothReservationApprovalRequest;
 import com.festivalapp.dto.BoothReservationResponse;
 import com.festivalapp.dto.BoothReservationSagaLogResponse;
@@ -28,6 +29,14 @@ public class BoothReservationApprovalService {
   public List<BoothReservationResponse> getPendingReservations() {
     return boothReservationRepository.findAll().stream()
         .filter(BoothReservation::canApprove)
+        .map(BoothReservationResponse::from)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public List<BoothReservationResponse> getApprovedReservations() {
+    return boothReservationRepository.findAll().stream()
+        .filter(this::isApprovedReservation)
         .map(BoothReservationResponse::from)
         .toList();
   }
@@ -93,5 +102,11 @@ public class BoothReservationApprovalService {
 
   private boolean isBlank(String value) {
     return value == null || value.isBlank();
+  }
+
+  private boolean isApprovedReservation(BoothReservation reservation) {
+    return reservation.status() == BoothReservationStatus.RESERVED
+        || reservation.status() == BoothReservationStatus.CHECKED_IN
+        || reservation.status() == BoothReservationStatus.COMPLETED;
   }
 }

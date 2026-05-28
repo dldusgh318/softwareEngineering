@@ -6,6 +6,7 @@ import type { HTTPError } from "ky";
 import {
   approveBoothReservation,
   checkInBoothReservation,
+  getApprovedBoothReservations,
   getPendingBoothReservations,
 } from "@/apis/booths/booth.api";
 import { BoothReservationQr } from "@/components/booths/booth-reservation-qr";
@@ -58,24 +59,28 @@ export function AdminBoothReservationApproval() {
     let isActive = true;
     const controller = new AbortController();
 
-    getPendingBoothReservations(controller.signal)
-      .then((reservations) => {
+    Promise.all([
+      getPendingBoothReservations(controller.signal),
+      getApprovedBoothReservations(controller.signal),
+    ])
+      .then(([pendingReservations, approvedReservations]) => {
         if (!isActive) {
           return;
         }
 
-        setPendingReservations(reservations);
+        setPendingReservations(pendingReservations);
+        setApprovedReservations(approvedReservations);
         setSelectedReservationId((currentId) => {
-          if (reservations.some((reservation) => reservation.id === currentId)) {
+          if (pendingReservations.some((reservation) => reservation.id === currentId)) {
             return currentId;
           }
 
-          return reservations[0]?.id ?? "";
+          return pendingReservations[0]?.id ?? "";
         });
       })
       .catch(() => {
         if (isActive) {
-          setErrorMessage("승인 대기 예약을 불러오지 못했습니다.");
+          setErrorMessage("부스 예약 목록을 불러오지 못했습니다.");
         }
       })
       .finally(() => {
@@ -119,7 +124,7 @@ export function AdminBoothReservationApproval() {
       }
       setApprovedReservations((currentReservations) => [
         approvedReservation,
-        ...currentReservations,
+        ...currentReservations.filter((reservation) => reservation.id !== approvedReservation.id),
       ]);
       setSelectedReservationId((currentId) => {
         if (approvedReservation.status === "QR_FAILED") {
@@ -153,6 +158,7 @@ export function AdminBoothReservationApproval() {
     setIsCheckingIn(true);
     setCheckInMessage("");
     setCheckInErrorMessage("");
+    setCheckInReservation(null);
 
     try {
       const checkedInReservation = await checkInBoothReservation({
@@ -263,7 +269,7 @@ export function AdminBoothReservationApproval() {
               </section>
 
               <section
-                aria-label="방금 승인한 예약"
+                aria-label="승인 완료 예약"
                 className="border-line-subtle bg-surface-glass border p-5 shadow-sm"
               >
                 <h2 className="text-xl font-bold">승인 완료</h2>

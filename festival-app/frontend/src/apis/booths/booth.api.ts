@@ -35,6 +35,12 @@ export function getPendingBoothReservations(signal?: AbortSignal) {
     .json<BoothReservationApplication[]>();
 }
 
+export function getApprovedBoothReservations(signal?: AbortSignal) {
+  return apiClient
+    .get("api/admin/booth-reservations/approved", { signal })
+    .json<BoothReservationApplication[]>();
+}
+
 export function approveBoothReservation(
   reservationId: string,
   request: BoothReservationApprovalRequest,

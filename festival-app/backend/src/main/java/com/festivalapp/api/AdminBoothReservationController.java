@@ -28,6 +28,11 @@ public class AdminBoothReservationController {
     return ResponseEntity.ok(boothReservationApprovalService.getPendingReservations());
   }
 
+  @GetMapping("/approved")
+  ResponseEntity<List<BoothReservationResponse>> getApprovedReservations() {
+    return ResponseEntity.ok(boothReservationApprovalService.getApprovedReservations());
+  }
+
   @PostMapping("/{reservationId}/approve")
   ResponseEntity<BoothReservationResponse> approveReservation(
       @PathVariable String reservationId,

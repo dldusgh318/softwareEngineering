@@ -35,6 +35,22 @@ class BoothReservationApprovalServiceTest {
   }
 
   @Test
+  void getApprovedReservationsReturnsOnlyQrIssuedFlowReservations() {
+    BoothReservationApprovalService service = serviceWith(new ArrayList<>(List.of(
+        reservation("reservation-1", BoothReservationStatus.PENDING_APPROVAL),
+        reservation("reservation-2", BoothReservationStatus.RESERVED),
+        reservation("reservation-3", BoothReservationStatus.CHECKED_IN),
+        reservation("reservation-4", BoothReservationStatus.COMPLETED),
+        reservation("reservation-5", BoothReservationStatus.QR_FAILED))));
+
+    List<BoothReservationResponse> responses = service.getApprovedReservations();
+
+    assertThat(responses)
+        .extracting(BoothReservationResponse::id)
+        .containsExactly("reservation-2", "reservation-3", "reservation-4");
+  }
+
+  @Test
   void approveReservationIssuesQrAndChangesStatusToReserved() {
     List<BoothReservation> reservations = new ArrayList<>(List.of(
         reservation("reservation-1", BoothReservationStatus.PENDING_APPROVAL)));

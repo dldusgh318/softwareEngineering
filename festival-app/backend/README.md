@@ -107,6 +107,15 @@ GET /api/admin/booth-reservations/pending
 
 관리자가 승인해야 하는 `PENDING_APPROVAL` 상태의 예약 신청 목록을 반환합니다.
 
+### 관리자 승인 완료 예약 목록 조회
+
+```http
+GET /api/admin/booth-reservations/approved
+```
+
+관리자 화면 새로고침 이후에도 승인 완료 목록을 복원할 수 있도록, QR 발급 이후 흐름에 들어간
+`RESERVED`, `CHECKED_IN`, `COMPLETED` 상태의 예약 목록을 반환합니다.
+
 ### 관리자 예약 승인 및 QR 발급
 
 ```http

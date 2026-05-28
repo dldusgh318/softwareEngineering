@@ -48,6 +48,20 @@ class AdminBoothReservationControllerTest {
   }
 
   @Test
+  void getApprovedReservationsReturnsApprovedFlowReservations() throws Exception {
+    given(approvalService.getApprovedReservations())
+        .willReturn(List.of(reservationResponse(
+            "reservation-1",
+            "RESERVED",
+            "http://localhost:3000/booths/reservations/reservation-1")));
+
+    mockMvc.perform(get("/api/admin/booth-reservations/approved"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].id").value("reservation-1"))
+        .andExpect(jsonPath("$[0].status").value("RESERVED"));
+  }
+
+  @Test
   void approveReservationReturnsReservedReservationWithQrCode() throws Exception {
     given(approvalService.approveReservation(
         org.mockito.ArgumentMatchers.eq("reservation-1"),
