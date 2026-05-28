@@ -46,6 +46,14 @@ public class TicketReservationController {
         ticketReservationService.getMyReservation(authenticatedUserId(authentication), reservationId));
   }
 
+  @PostMapping("/{reservationId}/cancel")
+  ResponseEntity<TicketReservationResponse> cancelMyReservation(
+      Authentication authentication,
+      @PathVariable String reservationId) {
+    return ResponseEntity.ok(
+        ticketReservationService.cancelMyReservation(authenticatedUserId(authentication), reservationId));
+  }
+
   private String authenticatedUserId(Authentication authentication) {
     if (authentication == null
         || !(authentication.getPrincipal() instanceof AuthenticatedUser user)) {

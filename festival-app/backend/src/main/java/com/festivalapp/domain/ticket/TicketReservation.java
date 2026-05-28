@@ -50,9 +50,21 @@ public class TicketReservation {
     updatedAt = now;
   }
 
+  public void cancel(LocalDateTime now) {
+    status = TicketReservationStatus.CANCELLED;
+    updatedAt = now;
+  }
+
   public boolean isSeatOccupying() {
     return status != TicketReservationStatus.CANCELLED
         && status != TicketReservationStatus.FAILED;
+  }
+
+  public boolean isCancellable() {
+    return status == TicketReservationStatus.SEAT_HELD
+        || status == TicketReservationStatus.RESERVATION_CREATED
+        || status == TicketReservationStatus.QR_ISSUED
+        || status == TicketReservationStatus.COMPLETED;
   }
 
   public String id() {

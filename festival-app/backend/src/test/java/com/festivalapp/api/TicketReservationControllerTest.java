@@ -83,15 +83,38 @@ class TicketReservationControllerTest {
         .andExpect(jsonPath("$.id").value("ticket-1"));
   }
 
+  @Test
+  void cancelMyReservationReturnsCancelledReservation() throws Exception {
+    given(ticketReservationService.cancelMyReservation("user-1", "ticket-1"))
+        .willReturn(ticketReservationResponse("CANCELLED", "예매 취소", null));
+
+    mockMvc.perform(post("/api/ticket-reservations/ticket-1/cancel")
+            .principal(authenticatedUser("user-1")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value("ticket-1"))
+        .andExpect(jsonPath("$.status").value("CANCELLED"))
+        .andExpect(jsonPath("$.qrCode").doesNotExist());
+  }
+
   private TicketReservationResponse ticketReservationResponse() {
+    return ticketReservationResponse(
+        "COMPLETED",
+        "예매 완료",
+        "http://localhost:3000/performances/tickets/ticket-1");
+  }
+
+  private TicketReservationResponse ticketReservationResponse(
+      String status,
+      String statusDescription,
+      String qrCode) {
     LocalDateTime now = LocalDateTime.of(2026, 5, 13, 19, 0);
     return new TicketReservationResponse(
         "ticket-1",
         1L,
         "user-1",
-        "COMPLETED",
-        "예매 완료",
-        "http://localhost:3000/performances/tickets/ticket-1",
+        status,
+        statusDescription,
+        qrCode,
         List.of(
             new TicketReservationSagaLogResponse("SEAT_CHECKED", "잔여 좌석을 확인했습니다.", now),
             new TicketReservationSagaLogResponse("SEAT_HELD", "좌석을 선점했습니다.", now),
