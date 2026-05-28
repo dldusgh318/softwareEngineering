@@ -16,6 +16,7 @@ export default function PerformanceDetailPage() {
   const params = useParams<{ performanceId: string }>();
   const { isAuthenticated, isInitialized } = useAuth();
   const performanceId = useMemo(() => Number(params.performanceId), [params.performanceId]);
+  const performanceDetailPath = `/performances/${performanceId}`;
   const {
     data: performance,
     error,
@@ -29,7 +30,13 @@ export default function PerformanceDetailPage() {
 
   return (
     <main className="bg-brand-navy text-text-primary min-h-screen">
-      <SiteHeader actionHref="/login" actionLabel="로그인" actionVariant="filled" fixed showNav />
+      <SiteHeader
+        actionHref={`/login?redirect=${performanceDetailPath}`}
+        actionLabel="로그인"
+        actionVariant="filled"
+        fixed
+        showNav
+      />
 
       <section className="mx-auto w-full max-w-7xl px-4 pt-28 pb-16 sm:px-6 lg:px-8">
         <Link
@@ -60,6 +67,7 @@ export default function PerformanceDetailPage() {
                 isAuthenticated={isAuthenticated}
                 isInitialized={isInitialized}
                 remainingSeats={performance.remainingSeats}
+                redirectPath={performanceDetailPath}
               />
             </>
           )}

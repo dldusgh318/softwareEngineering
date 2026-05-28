@@ -4,12 +4,14 @@ type PerformanceReservationPanelProps = {
   isAuthenticated: boolean;
   isInitialized: boolean;
   remainingSeats: number;
+  redirectPath?: string;
 };
 
 export default function PerformanceReservationPanel({
   isAuthenticated,
   isInitialized,
   remainingSeats,
+  redirectPath = "/performances",
 }: PerformanceReservationPanelProps) {
   const isSoldOut = remainingSeats <= 0;
 
@@ -49,7 +51,7 @@ export default function PerformanceReservationPanel({
         </button>
       ) : (
         <Link
-          href="/login?redirect=/performances"
+          href={`/login?redirect=${redirectPath}`}
           className="bg-brand-coral hover:bg-brand-coral-soft hover:text-brand-navy mt-5 inline-flex h-11 w-full items-center justify-center rounded-full text-sm font-black text-white transition"
         >
           로그인하고 예매하기

@@ -16,6 +16,22 @@ describe("PerformanceReservationPanel", () => {
     );
   });
 
+  it("redirectPath가 있으면 로그인 후 해당 경로로 돌아가도록 링크를 만든다", () => {
+    render(
+      <PerformanceReservationPanel
+        isAuthenticated={false}
+        isInitialized
+        remainingSeats={128}
+        redirectPath="/performances/1"
+      />,
+    );
+
+    expect(screen.getByRole("link", { name: "로그인하고 예매하기" })).toHaveAttribute(
+      "href",
+      "/login?redirect=/performances/1",
+    );
+  });
+
   it("로그인 사용자는 향후 예매 기능 버튼 영역을 볼 수 있다", () => {
     render(<PerformanceReservationPanel isAuthenticated isInitialized remainingSeats={128} />);
 
