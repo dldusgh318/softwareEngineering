@@ -29,7 +29,7 @@ export default function PerformancesPage() {
           <p className="typo-caption text-brand-coral-soft mb-4 font-black">PERFORMANCE TICKETS</p>
           <h1 className="typo-title text-4xl sm:text-5xl">공연 예매</h1>
           <p className="typo-body text-text-secondary mt-4 max-w-2xl">
-            축제 공연 일정과 잔여 좌석을 확인하고 상세 정보에서 예매 준비 상태를 확인하세요.
+            공연을 선택하고 좌석 선점부터 QR 티켓 발급까지 한 번에 진행하세요.
           </p>
         </div>
 
@@ -40,7 +40,7 @@ export default function PerformancesPage() {
               <p className="typo-caption text-text-muted mt-1">
                 {isInitialized && isAuthenticated && user
                   ? `${user.name}님, 예매 가능한 공연입니다.`
-                  : "로그인 전에도 공연 정보와 잔여 좌석을 확인할 수 있습니다."}
+                  : "로그인 후 공연 티켓 예매를 진행할 수 있습니다."}
               </p>
             </div>
             <span className="text-text-muted text-sm font-bold">{performances.length}개 공연</span>
@@ -51,7 +51,7 @@ export default function PerformancesPage() {
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={index}
-                  className="h-56 animate-pulse rounded-2xl border border-white/10 bg-white/10"
+                  className="h-56 animate-pulse rounded-3xl border border-white/10 bg-white/10"
                 />
               ))}
             </div>

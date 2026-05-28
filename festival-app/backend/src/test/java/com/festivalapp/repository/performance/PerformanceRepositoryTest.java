@@ -42,7 +42,6 @@ class PerformanceRepositoryTest {
         startsAt.plusHours(2),
         "메인무대",
         "공연 설명입니다.",
-        100,
-        40);
+        100);
   }
 }

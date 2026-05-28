@@ -10,10 +10,4 @@ public record Performance(
     LocalDateTime endsAt,
     String location,
     String description,
-    int totalSeats,
-    int reservedSeats) {
-
-  public int remainingSeats() {
-    return Math.max(totalSeats - reservedSeats, 0);
-  }
-}
+    int totalSeats) {}

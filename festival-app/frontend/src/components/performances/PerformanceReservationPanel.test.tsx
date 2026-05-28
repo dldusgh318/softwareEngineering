@@ -1,13 +1,82 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
 
 import PerformanceReservationPanel from "@/components/performances/PerformanceReservationPanel";
+import type { Performance } from "@/types/performance/performance.types";
+import type { TicketReservation } from "@/types/ticket/ticket.types";
+
+const performance: Performance = {
+  id: 1,
+  title: "와우 스테이지 헤드라이너",
+  artist: "헤드라이너 아티스트",
+  startsAt: "2026-05-13T19:00:00",
+  endsAt: "2026-05-13T21:00:00",
+  location: "대운동장 메인 스테이지",
+  description: "축제 첫날 밤을 여는 메인 스테이지 공연입니다.",
+  totalSeats: 500,
+  reservedSeats: 372,
+  remainingSeats: 128,
+};
+
+const reservation: TicketReservation = {
+  id: "ticket-1",
+  performanceId: 1,
+  userId: "user-1",
+  status: "COMPLETED",
+  statusDescription: "예매 완료",
+  qrCode: "http://localhost:3000/performances/tickets/ticket-1",
+  sagaLogs: [
+    {
+      step: "SEAT_CHECKED",
+      message: "잔여 좌석을 확인했습니다.",
+      createdAt: "2026-05-13T19:00:00",
+    },
+    {
+      step: "SEAT_HELD",
+      message: "좌석을 선점했습니다.",
+      createdAt: "2026-05-13T19:00:00",
+    },
+    {
+      step: "RESERVATION_CREATED",
+      message: "예매 정보를 생성했습니다.",
+      createdAt: "2026-05-13T19:00:00",
+    },
+    {
+      step: "QR_ISSUED",
+      message: "QR 티켓을 발급했습니다.",
+      createdAt: "2026-05-13T19:00:00",
+    },
+    {
+      step: "COMPLETED",
+      message: "예매를 완료했습니다.",
+      createdAt: "2026-05-13T19:00:00",
+    },
+  ],
+  createdAt: "2026-05-13T19:00:00",
+  updatedAt: "2026-05-13T19:00:00",
+};
+
+function renderPanel(
+  overrideProps: Partial<Parameters<typeof PerformanceReservationPanel>[0]> = {},
+) {
+  return render(
+    <PerformanceReservationPanel
+      errorMessage=""
+      isAuthenticated
+      isInitialized
+      isSubmitting={false}
+      performance={performance}
+      reservation={null}
+      onReserve={vi.fn()}
+      {...overrideProps}
+    />,
+  );
+}
 
 describe("PerformanceReservationPanel", () => {
-  it("비로그인 사용자는 로그인 예매 링크를 볼 수 있다", () => {
-    render(
-      <PerformanceReservationPanel isAuthenticated={false} isInitialized remainingSeats={128} />,
-    );
+  it("비로그인 사용자는 기본 로그인 예매 링크를 볼 수 있다", () => {
+    renderPanel({ isAuthenticated: false });
 
     expect(screen.getByText("128석")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "로그인하고 예매하기" })).toHaveAttribute(
@@ -17,14 +86,7 @@ describe("PerformanceReservationPanel", () => {
   });
 
   it("redirectPath가 있으면 로그인 후 해당 경로로 돌아가도록 링크를 만든다", () => {
-    render(
-      <PerformanceReservationPanel
-        isAuthenticated={false}
-        isInitialized
-        remainingSeats={128}
-        redirectPath="/performances/1"
-      />,
-    );
+    renderPanel({ isAuthenticated: false, redirectPath: "/performances/1" });
 
     expect(screen.getByRole("link", { name: "로그인하고 예매하기" })).toHaveAttribute(
       "href",
@@ -32,15 +94,32 @@ describe("PerformanceReservationPanel", () => {
     );
   });
 
-  it("로그인 사용자는 향후 예매 기능 버튼 영역을 볼 수 있다", () => {
-    render(<PerformanceReservationPanel isAuthenticated isInitialized remainingSeats={128} />);
+  it("로그인 사용자에게 예매 버튼을 표시하고 클릭 시 핸들러를 호출한다", async () => {
+    const user = userEvent.setup();
+    const handleReserve = vi.fn();
 
-    expect(screen.getByRole("button", { name: "예매 기능 준비 중" })).toBeDisabled();
+    renderPanel({ onReserve: handleReserve });
+
+    await user.click(screen.getByRole("button", { name: "좌석 선점하고 예매하기" }));
+
+    expect(handleReserve).toHaveBeenCalledOnce();
   });
 
   it("잔여 좌석이 없으면 매진 상태를 표시한다", () => {
-    render(<PerformanceReservationPanel isAuthenticated isInitialized remainingSeats={0} />);
+    renderPanel({ performance: { ...performance, remainingSeats: 0 } });
 
     expect(screen.getByRole("button", { name: "매진" })).toBeDisabled();
+  });
+
+  it("예매 완료 후 QR 티켓을 표시하고 내부 Saga 단계는 숨긴다", () => {
+    renderPanel({ reservation });
+
+    expect(screen.getByText("예매가 완료되었습니다")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("공연 티켓 QR http://localhost:3000/performances/tickets/ticket-1"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("예매 번호 ticket-1")).toBeInTheDocument();
+    expect(screen.queryByText("SEAT_CHECKED")).not.toBeInTheDocument();
+    expect(screen.queryByText("COMPLETED")).not.toBeInTheDocument();
   });
 });

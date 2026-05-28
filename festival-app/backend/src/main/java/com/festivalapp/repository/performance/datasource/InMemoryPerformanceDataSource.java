@@ -23,8 +23,7 @@ public class InMemoryPerformanceDataSource implements PerformanceDataSource {
               0,
               "대운동장 메인 스테이지",
               "축제 첫날 밤을 여는 메인 스테이지 공연입니다.",
-              500,
-              372),
+              500),
           performance(
               2L,
               "동아리 밴드 쇼케이스",
@@ -38,8 +37,7 @@ public class InMemoryPerformanceDataSource implements PerformanceDataSource {
               30,
               "학생회관 야외무대",
               "교내 밴드 동아리들이 준비한 라이브 쇼케이스입니다.",
-              220,
-              156),
+              220),
           performance(
               3L,
               "WOW DJ Festival",
@@ -53,8 +51,7 @@ public class InMemoryPerformanceDataSource implements PerformanceDataSource {
               30,
               "운동장 DJ 스테이지",
               "축제 마지막 밤을 채우는 DJ 페스티벌 공연입니다.",
-              800,
-              615));
+              800));
 
   @Override
   public List<Performance> findAll() {
@@ -74,8 +71,7 @@ public class InMemoryPerformanceDataSource implements PerformanceDataSource {
       int endMinute,
       String location,
       String description,
-      int totalSeats,
-      int reservedSeats) {
+      int totalSeats) {
     return new Performance(
         id,
         title,
@@ -84,7 +80,6 @@ public class InMemoryPerformanceDataSource implements PerformanceDataSource {
         LocalDateTime.of(year, month, day, endHour, endMinute),
         location,
         description,
-        totalSeats,
-        reservedSeats);
+        totalSeats);
   }
 }

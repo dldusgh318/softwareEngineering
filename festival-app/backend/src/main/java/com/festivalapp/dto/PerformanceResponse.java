@@ -15,7 +15,7 @@ public record PerformanceResponse(
     int reservedSeats,
     int remainingSeats) {
 
-  public static PerformanceResponse from(Performance performance) {
+  public static PerformanceResponse from(Performance performance, int reservedSeats) {
     return new PerformanceResponse(
         performance.id(),
         performance.title(),
@@ -25,7 +25,7 @@ public record PerformanceResponse(
         performance.location(),
         performance.description(),
         performance.totalSeats(),
-        performance.reservedSeats(),
-        performance.remainingSeats());
+        reservedSeats,
+        Math.max(performance.totalSeats() - reservedSeats, 0));
   }
 }

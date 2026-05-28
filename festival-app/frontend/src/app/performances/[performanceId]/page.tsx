@@ -1,22 +1,28 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
 import { getPerformance } from "@/apis/performances/performance.api";
+import { createTicketReservation } from "@/apis/tickets/ticket.api";
 import PerformanceDetailPanel from "@/components/performances/PerformanceDetailPanel";
 import PerformanceReservationPanel from "@/components/performances/PerformanceReservationPanel";
 import SiteHeader from "@/components/SiteHeader";
 import { useAuth } from "@/providers/AuthProvider";
 import type { Performance } from "@/types/performance/performance.types";
+import type { TicketReservation } from "@/types/ticket/ticket.types";
+import { getAuthErrorMessage } from "@/utils/auth-error";
 
 export default function PerformanceDetailPage() {
   const params = useParams<{ performanceId: string }>();
   const { isAuthenticated, isInitialized } = useAuth();
   const performanceId = useMemo(() => Number(params.performanceId), [params.performanceId]);
-  const performanceDetailPath = `/performances/${performanceId}`;
+  const performanceDetailPath = `/performances/${params.performanceId}`;
+  const [reservation, setReservation] = useState<TicketReservation | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     data: performance,
     error,
@@ -27,6 +33,19 @@ export default function PerformanceDetailPage() {
     queryFn: ({ signal }) => getPerformance({ id: performanceId, signal }),
     enabled: Number.isFinite(performanceId),
   });
+
+  async function handleReserve() {
+    setErrorMessage("");
+    setIsSubmitting(true);
+
+    try {
+      setReservation(await createTicketReservation({ performanceId }));
+    } catch (error) {
+      setErrorMessage(await getAuthErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <main className="bg-brand-navy text-text-primary min-h-screen">
@@ -46,11 +65,11 @@ export default function PerformanceDetailPage() {
           공연 목록으로 돌아가기
         </Link>
 
-        <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_24rem]">
           {isLoading && (
             <>
-              <div className="h-96 animate-pulse rounded-2xl border border-white/10 bg-white/10" />
-              <div className="h-72 animate-pulse rounded-2xl border border-white/10 bg-white/10" />
+              <div className="h-96 animate-pulse rounded-3xl border border-white/10 bg-white/10" />
+              <div className="h-72 animate-pulse rounded-3xl border border-white/10 bg-white/10" />
             </>
           )}
 
@@ -64,10 +83,14 @@ export default function PerformanceDetailPage() {
             <>
               <PerformanceDetailPanel performance={performance} />
               <PerformanceReservationPanel
+                errorMessage={errorMessage}
                 isAuthenticated={isAuthenticated}
                 isInitialized={isInitialized}
-                remainingSeats={performance.remainingSeats}
+                isSubmitting={isSubmitting}
+                performance={performance}
                 redirectPath={performanceDetailPath}
+                reservation={reservation}
+                onReserve={handleReserve}
               />
             </>
           )}
