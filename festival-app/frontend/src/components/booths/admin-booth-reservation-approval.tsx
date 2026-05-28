@@ -3,7 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import type { HTTPError } from "ky";
 
-import { approveBoothReservation, getPendingBoothReservations } from "@/apis/booths/booth.api";
+import {
+  approveBoothReservation,
+  checkInBoothReservation,
+  getPendingBoothReservations,
+} from "@/apis/booths/booth.api";
 import { BoothReservationQr } from "@/components/booths/booth-reservation-qr";
 import SiteHeader from "@/components/SiteHeader";
 import {
@@ -28,9 +32,16 @@ export function AdminBoothReservationApproval() {
   const [selectedReservationId, setSelectedReservationId] = useState("");
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [checkInQrCode, setCheckInQrCode] = useState("");
+  const [checkInReservation, setCheckInReservation] = useState<BoothReservationApplication | null>(
+    null,
+  );
+  const [checkInMessage, setCheckInMessage] = useState("");
+  const [checkInErrorMessage, setCheckInErrorMessage] = useState("");
   const [simulateQrFailure, setSimulateQrFailure] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isApproving, setIsApproving] = useState(false);
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
 
   const selectedReservation = useMemo(
     () => pendingReservations.find((reservation) => reservation.id === selectedReservationId),
@@ -129,6 +140,36 @@ export function AdminBoothReservationApproval() {
       setErrorMessage(await resolveApprovalErrorMessage(error));
     } finally {
       setIsApproving(false);
+    }
+  }
+
+  async function handleCheckIn() {
+    if (!checkInQrCode.trim()) {
+      setCheckInErrorMessage("체크인할 QR 정보를 입력해주세요.");
+      setCheckInMessage("");
+      return;
+    }
+
+    setIsCheckingIn(true);
+    setCheckInMessage("");
+    setCheckInErrorMessage("");
+
+    try {
+      const checkedInReservation = await checkInBoothReservation({
+        qrCode: checkInQrCode.trim(),
+      });
+
+      setApprovedReservations((currentReservations) =>
+        currentReservations.map((reservation) =>
+          reservation.id === checkedInReservation.id ? checkedInReservation : reservation,
+        ),
+      );
+      setCheckInReservation(checkedInReservation);
+      setCheckInMessage(`${checkedInReservation.applicantName}님의 현장 체크인이 완료되었습니다.`);
+    } catch (error) {
+      setCheckInErrorMessage(await resolveCheckInErrorMessage(error));
+    } finally {
+      setIsCheckingIn(false);
     }
   }
 
@@ -264,71 +305,137 @@ export function AdminBoothReservationApproval() {
               </section>
             </div>
 
-            <aside className="border-line-subtle bg-surface-glass h-fit border p-5 shadow-sm">
-              <div>
-                <p className="text-text-muted text-sm font-semibold">승인 처리</p>
-                <h2 className="mt-1 text-2xl font-bold">선택 예약</h2>
-              </div>
+            <aside className="grid h-fit gap-5">
+              <section className="border-line-subtle bg-surface-glass border p-5 shadow-sm">
+                <div>
+                  <p className="text-text-muted text-sm font-semibold">승인 처리</p>
+                  <h2 className="mt-1 text-2xl font-bold">선택 예약</h2>
+                </div>
 
-              {selectedReservation ? (
+                {selectedReservation ? (
+                  <div className="mt-5 space-y-4">
+                    <dl className="grid gap-3 text-sm">
+                      <div className="border-line-subtle grid grid-cols-[96px_1fr] gap-3 border-b pb-3">
+                        <dt className="text-text-muted font-semibold">신청자</dt>
+                        <dd className="font-medium">{selectedReservation.applicantName}</dd>
+                      </div>
+                      <div className="border-line-subtle grid grid-cols-[96px_1fr] gap-3 border-b pb-3">
+                        <dt className="text-text-muted font-semibold">부스</dt>
+                        <dd className="font-medium">{selectedReservation.boothId}</dd>
+                      </div>
+                      <div className="border-line-subtle grid grid-cols-[96px_1fr] gap-3 border-b pb-3">
+                        <dt className="text-text-muted font-semibold">테이블</dt>
+                        <dd className="font-medium">{selectedReservation.requestedTables}개</dd>
+                      </div>
+                      <div className="grid grid-cols-[96px_1fr] gap-3">
+                        <dt className="text-text-muted font-semibold">상태</dt>
+                        <dd className="font-medium">{selectedReservation.statusDescription}</dd>
+                      </div>
+                    </dl>
+                    {selectedReservation.status === "QR_FAILED" ? (
+                      <div className="border border-rose-300/35 bg-rose-500/12 p-3 text-sm text-rose-100">
+                        이전 QR 발급이 실패했습니다. 재승인하면 QR 발급을 다시 시도합니다.
+                      </div>
+                    ) : null}
+
+                    <label className="flex items-start gap-3 border border-white/12 bg-white/5 p-3 text-sm">
+                      <input
+                        aria-label="QR 발급 실패 시뮬레이션"
+                        checked={simulateQrFailure}
+                        className="mt-1"
+                        id={QR_FAILURE_SIMULATION_INPUT_ID}
+                        onChange={(event) => setSimulateQrFailure(event.target.checked)}
+                        type="checkbox"
+                      />
+                      <span>
+                        <span className="block font-bold">QR 발급 실패 시뮬레이션</span>
+                        <span className="text-text-secondary mt-1 block">
+                          테스트용으로 승인 후 QR 발급 실패와 보상 처리를 확인합니다.
+                        </span>
+                      </span>
+                    </label>
+
+                    <button
+                      className="bg-brand-mint h-11 w-full px-4 text-sm font-bold text-zinc-950 transition hover:bg-emerald-200 disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-white/45"
+                      disabled={isApproving}
+                      onClick={handleApprove}
+                      type="button"
+                    >
+                      {isApproving
+                        ? "승인 중"
+                        : selectedReservation.status === "QR_FAILED"
+                          ? "재승인하고 QR 재발급"
+                          : "승인하고 QR 발급"}
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-text-secondary mt-5 text-sm">승인할 예약을 선택해주세요.</p>
+                )}
+              </section>
+
+              <section
+                aria-label="QR 체크인"
+                className="border-line-subtle bg-surface-glass border p-5 shadow-sm"
+              >
+                <div>
+                  <p className="text-text-muted text-sm font-semibold">현장 체크인</p>
+                  <h2 className="mt-1 text-2xl font-bold">QR 검증</h2>
+                </div>
+
                 <div className="mt-5 space-y-4">
-                  <dl className="grid gap-3 text-sm">
-                    <div className="border-line-subtle grid grid-cols-[96px_1fr] gap-3 border-b pb-3">
-                      <dt className="text-text-muted font-semibold">신청자</dt>
-                      <dd className="font-medium">{selectedReservation.applicantName}</dd>
-                    </div>
-                    <div className="border-line-subtle grid grid-cols-[96px_1fr] gap-3 border-b pb-3">
-                      <dt className="text-text-muted font-semibold">부스</dt>
-                      <dd className="font-medium">{selectedReservation.boothId}</dd>
-                    </div>
-                    <div className="border-line-subtle grid grid-cols-[96px_1fr] gap-3 border-b pb-3">
-                      <dt className="text-text-muted font-semibold">테이블</dt>
-                      <dd className="font-medium">{selectedReservation.requestedTables}개</dd>
-                    </div>
-                    <div className="grid grid-cols-[96px_1fr] gap-3">
-                      <dt className="text-text-muted font-semibold">상태</dt>
-                      <dd className="font-medium">{selectedReservation.statusDescription}</dd>
-                    </div>
-                  </dl>
-                  {selectedReservation.status === "QR_FAILED" ? (
-                    <div className="border border-rose-300/35 bg-rose-500/12 p-3 text-sm text-rose-100">
-                      이전 QR 발급이 실패했습니다. 재승인하면 QR 발급을 다시 시도합니다.
+                  <label className="block text-sm font-semibold" htmlFor="booth-check-in-qr">
+                    QR 값
+                  </label>
+                  <textarea
+                    className="border-line-subtle focus:border-brand-mint min-h-24 w-full resize-none border bg-white/8 px-3 py-3 text-sm text-white transition outline-none placeholder:text-white/35"
+                    id="booth-check-in-qr"
+                    onChange={(event) => setCheckInQrCode(event.target.value)}
+                    placeholder="스캔된 QR URL을 붙여넣으세요."
+                    value={checkInQrCode}
+                  />
+
+                  {checkInErrorMessage ? (
+                    <div className="border border-rose-300/40 bg-rose-500/15 px-4 py-3 text-sm text-rose-100">
+                      {checkInErrorMessage}
                     </div>
                   ) : null}
 
-                  <label className="flex items-start gap-3 border border-white/12 bg-white/5 p-3 text-sm">
-                    <input
-                      aria-label="QR 발급 실패 시뮬레이션"
-                      checked={simulateQrFailure}
-                      className="mt-1"
-                      id={QR_FAILURE_SIMULATION_INPUT_ID}
-                      onChange={(event) => setSimulateQrFailure(event.target.checked)}
-                      type="checkbox"
-                    />
-                    <span>
-                      <span className="block font-bold">QR 발급 실패 시뮬레이션</span>
-                      <span className="text-text-secondary mt-1 block">
-                        테스트용으로 승인 후 QR 발급 실패와 보상 처리를 확인합니다.
-                      </span>
-                    </span>
-                  </label>
+                  {checkInMessage ? (
+                    <div className="border border-emerald-300/40 bg-emerald-500/15 px-4 py-3 text-sm text-emerald-100">
+                      {checkInMessage}
+                    </div>
+                  ) : null}
 
                   <button
-                    className="bg-brand-mint h-11 w-full px-4 text-sm font-bold text-zinc-950 transition hover:bg-emerald-200 disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-white/45"
-                    disabled={isApproving}
-                    onClick={handleApprove}
+                    className="h-11 w-full border border-white/25 bg-white/12 px-4 text-sm font-bold text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/40"
+                    disabled={isCheckingIn}
+                    onClick={handleCheckIn}
                     type="button"
                   >
-                    {isApproving
-                      ? "승인 중"
-                      : selectedReservation.status === "QR_FAILED"
-                        ? "재승인하고 QR 재발급"
-                        : "승인하고 QR 발급"}
+                    {isCheckingIn ? "체크인 중" : "QR 체크인"}
                   </button>
+
+                  {checkInReservation ? (
+                    <div className="border-line-subtle border-t pt-4 text-sm">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-bold">{checkInReservation.applicantName}</p>
+                          <p className="text-text-secondary mt-1">
+                            부스 {checkInReservation.boothId} · 테이블{" "}
+                            {checkInReservation.requestedTables}개
+                          </p>
+                        </div>
+                        <span
+                          className={`inline-flex h-8 shrink-0 items-center border px-3 text-xs font-bold ${boothReservationStatusStyles[checkInReservation.status]}`}
+                        >
+                          {checkInReservation.statusDescription ||
+                            boothReservationStatusLabels[checkInReservation.status]}
+                        </span>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
-              ) : (
-                <p className="text-text-secondary mt-5 text-sm">승인할 예약을 선택해주세요.</p>
-              )}
+              </section>
             </aside>
           </>
         )}
@@ -398,6 +505,19 @@ async function resolveApprovalErrorMessage(error: unknown) {
   }
 
   return "예약 승인에 실패했습니다.";
+}
+
+async function resolveCheckInErrorMessage(error: unknown) {
+  const httpError = error as HTTPError;
+
+  if (httpError.response) {
+    const data = await httpError.response.json().catch(() => null);
+    if (isMessageResponse(data)) {
+      return data.message;
+    }
+  }
+
+  return "QR 체크인에 실패했습니다.";
 }
 
 function isMessageResponse(data: unknown): data is { message: string } {

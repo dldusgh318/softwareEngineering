@@ -4,6 +4,7 @@ import type {
   BoothReservationApplication,
   BoothReservationApplicationRequest,
   BoothReservationApprovalRequest,
+  BoothReservationCheckInRequest,
 } from "@/types/booth/booths.types";
 
 export function getBooths(signal?: AbortSignal) {
@@ -40,5 +41,11 @@ export function approveBoothReservation(
 ) {
   return apiClient
     .post(`api/admin/booth-reservations/${reservationId}/approve`, { json: request })
+    .json<BoothReservationApplication>();
+}
+
+export function checkInBoothReservation(request: BoothReservationCheckInRequest) {
+  return apiClient
+    .post("api/admin/booth-reservations/check-in", { json: request })
     .json<BoothReservationApplication>();
 }

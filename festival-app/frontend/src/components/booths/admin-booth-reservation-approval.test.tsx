@@ -2,13 +2,18 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { approveBoothReservation, getPendingBoothReservations } from "@/apis/booths/booth.api";
+import {
+  approveBoothReservation,
+  checkInBoothReservation,
+  getPendingBoothReservations,
+} from "@/apis/booths/booth.api";
 import { AdminBoothReservationApproval } from "@/components/booths/admin-booth-reservation-approval";
 import { useAuth } from "@/providers/AuthProvider";
 import type { BoothReservationApplication } from "@/types/booth/booths.types";
 
 vi.mock("@/apis/booths/booth.api", () => ({
   approveBoothReservation: vi.fn(),
+  checkInBoothReservation: vi.fn(),
   getPendingBoothReservations: vi.fn(),
 }));
 
@@ -22,6 +27,7 @@ vi.mock("next/navigation", () => ({
 
 const mockedGetPendingBoothReservations = vi.mocked(getPendingBoothReservations);
 const mockedApproveBoothReservation = vi.mocked(approveBoothReservation);
+const mockedCheckInBoothReservation = vi.mocked(checkInBoothReservation);
 const mockedUseAuth = vi.mocked(useAuth);
 
 describe("AdminBoothReservationApproval", () => {
@@ -182,6 +188,52 @@ describe("AdminBoothReservationApproval", () => {
     expect(screen.getAllByText("QR 발급 실패")).not.toHaveLength(0);
     expect(screen.getByText("QR 발급 시뮬레이션 실패")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "재승인하고 QR 재발급" })).toBeInTheDocument();
+  });
+
+  it("checks in reservation with scanned QR code", async () => {
+    const user = userEvent.setup();
+    const qrCode = "http://localhost:3000/booths/reservations/reservation-1";
+    mockedGetPendingBoothReservations.mockResolvedValue([]);
+    mockedCheckInBoothReservation.mockResolvedValue(
+      reservationApplication({
+        id: "reservation-1",
+        applicantName: "홍길동",
+        status: "CHECKED_IN",
+        statusDescription: "현장 체크인 완료",
+        qrCode,
+      }),
+    );
+
+    render(<AdminBoothReservationApproval />);
+
+    await screen.findByText("승인 대기 예약이 없습니다.");
+    await user.type(screen.getByLabelText("QR 값"), qrCode);
+    await user.click(screen.getByRole("button", { name: "QR 체크인" }));
+
+    expect(mockedCheckInBoothReservation).toHaveBeenCalledWith({ qrCode });
+    expect(await screen.findByText("홍길동님의 현장 체크인이 완료되었습니다.")).toBeInTheDocument();
+    expect(screen.getByText("현장 체크인 완료")).toBeInTheDocument();
+  });
+
+  it("shows check-in error message from API", async () => {
+    const user = userEvent.setup();
+    mockedGetPendingBoothReservations.mockResolvedValue([]);
+    mockedCheckInBoothReservation.mockRejectedValue({
+      response: {
+        json: () => Promise.resolve({ message: "이미 체크인된 예약입니다." }),
+      },
+    });
+
+    render(<AdminBoothReservationApproval />);
+
+    await screen.findByText("승인 대기 예약이 없습니다.");
+    await user.type(
+      screen.getByLabelText("QR 값"),
+      "http://localhost:3000/booths/reservations/reservation-1",
+    );
+    await user.click(screen.getByRole("button", { name: "QR 체크인" }));
+
+    expect(await screen.findByText("이미 체크인된 예약입니다.")).toBeInTheDocument();
   });
 });
 
