@@ -1,6 +1,7 @@
 package com.festivalapp.repository.booth.reservation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.festivalapp.domain.booth.reservation.BoothReservation;
 import com.festivalapp.domain.booth.reservation.BoothReservationStatus;
@@ -40,6 +41,43 @@ class BoothReservationRepositoryTest {
         reservation("reservation-3", "booth-2", "user-3", 4, BoothReservationStatus.PENDING_APPROVAL)));
 
     assertThat(repository.sumActiveRequestedTablesByBoothId("booth-1")).isEqualTo(2);
+  }
+
+  @Test
+  void saveIfAvailableRejectsDuplicateActiveReservationForSameApplicant() {
+    BoothReservationRepository repository = repositoryWith(List.of(
+        reservation("reservation-1", "booth-1", "user-1", 1, BoothReservationStatus.PENDING_APPROVAL)));
+
+    assertThatThrownBy(() -> repository.saveIfAvailable(
+        reservation("reservation-2", "booth-1", "user-1", 1, BoothReservationStatus.PENDING_APPROVAL),
+        4))
+        .isInstanceOf(DuplicateBoothReservationException.class)
+        .hasMessage("이미 신청한 부스 예약이 있습니다.");
+  }
+
+  @Test
+  void saveIfAvailableRejectsReservationWhenActiveTablesExceedCapacity() {
+    BoothReservationRepository repository = repositoryWith(List.of(
+        reservation("reservation-1", "booth-1", "user-1", 3, BoothReservationStatus.PENDING_APPROVAL)));
+
+    assertThatThrownBy(() -> repository.saveIfAvailable(
+        reservation("reservation-2", "booth-1", "user-2", 2, BoothReservationStatus.PENDING_APPROVAL),
+        4))
+        .isInstanceOf(BoothReservationCapacityExceededException.class)
+        .hasMessage("신청 가능한 테이블 수를 초과했습니다.");
+  }
+
+  @Test
+  void saveIfAvailableStoresReservationWhenCancelledReservationsFreeCapacity() {
+    BoothReservationRepository repository = repositoryWith(List.of(
+        reservation("reservation-1", "booth-1", "user-1", 4, BoothReservationStatus.CANCELLED)));
+    BoothReservation reservation =
+        reservation("reservation-2", "booth-1", "user-1", 4, BoothReservationStatus.PENDING_APPROVAL);
+
+    BoothReservation savedReservation = repository.saveIfAvailable(reservation, 4);
+
+    assertThat(savedReservation).isEqualTo(reservation);
+    assertThat(repository.findAll()).hasSize(2);
   }
 
   @Test
