@@ -32,6 +32,6 @@ public class PerformanceService {
   private PerformanceResponse toResponse(Performance performance) {
     int reservedSeats =
         ticketReservationRepository.countReservedSeatsByPerformanceId(performance.id());
-    return PerformanceResponse.from(performance, Math.max(performance.totalSeats() - reservedSeats, 0));
+    return PerformanceResponse.from(performance, reservedSeats);
   }
 }

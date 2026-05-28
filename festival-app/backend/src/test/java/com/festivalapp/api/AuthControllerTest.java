@@ -46,7 +46,7 @@ class AuthControllerTest {
   }
 
   @Test
-  void adminSignupReturnsAdminRole() throws Exception {
+  void signupIgnoresAdminRoleAndReturnsUser() throws Exception {
     mockMvc
         .perform(
             post("/api/auth/signup")
@@ -58,6 +58,22 @@ class AuthControllerTest {
                             "email", "admin-signup@hongik.ac.kr",
                             "password", "password123",
                             "role", "ADMIN"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.role").value("USER"));
+  }
+
+  @Test
+  void adminSignupReturnsAdminRole() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/admin/auth/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "name", "관리자",
+                            "email", "admin-only-signup@hongik.ac.kr",
+                            "password", "password123"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.user.role").value("ADMIN"));
   }

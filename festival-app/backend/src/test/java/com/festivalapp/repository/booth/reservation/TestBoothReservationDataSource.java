@@ -1,6 +1,7 @@
 package com.festivalapp.repository.booth.reservation;
 
 import com.festivalapp.domain.booth.reservation.BoothReservation;
+import com.festivalapp.domain.booth.reservation.BoothReservationStatus;
 import com.festivalapp.repository.booth.reservation.datasource.BoothReservationDataSource;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +28,29 @@ public class TestBoothReservationDataSource implements BoothReservationDataSourc
 
   @Override
   public BoothReservation save(BoothReservation reservation) {
+    reservations.add(reservation);
+    return reservation;
+  }
+
+  @Override
+  public BoothReservation saveIfAvailable(BoothReservation reservation, int availableTables) {
+    if (reservations.stream().anyMatch(savedReservation ->
+        savedReservation.boothId().equals(reservation.boothId())
+            && savedReservation.applicantId().equals(reservation.applicantId())
+            && savedReservation.status() != BoothReservationStatus.CANCELLED)) {
+      throw new DuplicateBoothReservationException();
+    }
+
+    int activeTables = reservations.stream()
+        .filter(savedReservation -> savedReservation.boothId().equals(reservation.boothId()))
+        .filter(savedReservation -> savedReservation.status() != BoothReservationStatus.CANCELLED)
+        .mapToInt(BoothReservation::requestedTables)
+        .sum();
+
+    if (activeTables + reservation.requestedTables() > availableTables) {
+      throw new BoothReservationCapacityExceededException();
+    }
+
     reservations.add(reservation);
     return reservation;
   }

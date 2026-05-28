@@ -23,6 +23,14 @@ public class AuthService {
   private final JwtTokenProvider jwtTokenProvider;
 
   public AuthResponse signup(SignupRequest request) {
+    return signupWithRole(request, UserRole.USER);
+  }
+
+  public AuthResponse signupAdmin(SignupRequest request) {
+    return signupWithRole(request, UserRole.ADMIN);
+  }
+
+  private AuthResponse signupWithRole(SignupRequest request, UserRole role) {
     String email = normalizeEmail(request.email());
 
     if (userRepository.existsByEmail(email)) {
@@ -35,7 +43,7 @@ public class AuthService {
             request.name(),
             email,
             passwordEncoder.encode(request.password()),
-            resolveRole(request.role()));
+            role);
     User savedUser = userRepository.save(user);
     return toAuthResponse(savedUser);
   }
@@ -59,10 +67,6 @@ public class AuthService {
 
   private AuthResponse toAuthResponse(User user) {
     return new AuthResponse(jwtTokenProvider.createToken(user), UserResponse.from(user));
-  }
-
-  private UserRole resolveRole(UserRole requestedRole) {
-    return requestedRole == null ? UserRole.USER : requestedRole;
   }
 
   private String normalizeEmail(String email) {

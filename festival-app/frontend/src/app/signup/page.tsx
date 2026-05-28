@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 
 import SiteHeader from "@/components/SiteHeader";
 import { useAuth } from "@/providers/AuthProvider";
-import type { AuthRole } from "@/types/auth.types";
 import { getAuthErrorMessage } from "@/utils/auth-error";
 
 export default function SignupPage() {
@@ -15,7 +14,6 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<AuthRole>("USER");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -25,7 +23,7 @@ export default function SignupPage() {
     setIsSubmitting(true);
 
     try {
-      await signup({ name, email, password, role });
+      await signup({ name, email, password });
       router.replace("/");
     } catch (error) {
       setErrorMessage(await getAuthErrorMessage(error));
@@ -96,22 +94,6 @@ export default function SignupPage() {
               />
             </label>
 
-            <label className="grid gap-2">
-              <span className="text-sm font-bold text-white/74">계정 타입</span>
-              <select
-                className="focus:border-brand-cream h-12 rounded-2xl border border-white/14 bg-white/10 px-4 text-white transition outline-none focus:bg-white/14"
-                onChange={(event) => setRole(event.target.value as AuthRole)}
-                value={role}
-              >
-                <option className="text-zinc-950" value="USER">
-                  일반 사용자
-                </option>
-                <option className="text-zinc-950" value="ADMIN">
-                  관리자
-                </option>
-              </select>
-            </label>
-
             {errorMessage ? (
               <p className="rounded-2xl border border-red-300/40 bg-red-500/14 px-4 py-3 text-sm font-semibold text-red-100">
                 {errorMessage}
@@ -131,6 +113,12 @@ export default function SignupPage() {
             이미 계정이 있다면{" "}
             <Link href="/login" className="text-brand-cream font-black">
               로그인
+            </Link>
+          </p>
+          <p className="typo-caption text-text-muted mt-3 text-center">
+            관리자 계정은{" "}
+            <Link href="/admin/signup" className="text-brand-cream font-black">
+              관리자 가입
             </Link>
           </p>
         </div>

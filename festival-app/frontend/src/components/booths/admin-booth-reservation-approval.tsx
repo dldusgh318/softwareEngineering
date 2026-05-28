@@ -17,6 +17,7 @@ const ADMIN_APPROVER = {
   id: "admin-1",
   name: "관리자",
 };
+const QR_FAILURE_SIMULATION_INPUT_ID = "qr-failure-simulation";
 
 export function AdminBoothReservationApproval() {
   const { isAuthenticated, isInitialized, user } = useAuth();
@@ -27,6 +28,7 @@ export function AdminBoothReservationApproval() {
   const [selectedReservationId, setSelectedReservationId] = useState("");
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [simulateQrFailure, setSimulateQrFailure] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isApproving, setIsApproving] = useState(false);
 
@@ -90,16 +92,29 @@ export function AdminBoothReservationApproval() {
       const approvedReservation = await approveBoothReservation(selectedReservation.id, {
         approverId: ADMIN_APPROVER.id,
         approverName: ADMIN_APPROVER.name,
+        simulateQrFailure,
       });
 
-      setPendingReservations((currentReservations) =>
-        currentReservations.filter((reservation) => reservation.id !== approvedReservation.id),
-      );
+      if (approvedReservation.status === "QR_FAILED") {
+        setPendingReservations((currentReservations) =>
+          currentReservations.map((reservation) =>
+            reservation.id === approvedReservation.id ? approvedReservation : reservation,
+          ),
+        );
+      } else {
+        setPendingReservations((currentReservations) =>
+          currentReservations.filter((reservation) => reservation.id !== approvedReservation.id),
+        );
+      }
       setApprovedReservations((currentReservations) => [
         approvedReservation,
         ...currentReservations,
       ]);
       setSelectedReservationId((currentId) => {
+        if (approvedReservation.status === "QR_FAILED") {
+          return approvedReservation.id;
+        }
+
         if (currentId !== approvedReservation.id) {
           return currentId;
         }
@@ -109,7 +124,7 @@ export function AdminBoothReservationApproval() {
             ?.id ?? ""
         );
       });
-      setMessage(`${approvedReservation.applicantName}님의 예약을 승인하고 QR을 발급했습니다.`);
+      setMessage(resolveApprovalSuccessMessage(approvedReservation));
     } catch (error) {
       setErrorMessage(await resolveApprovalErrorMessage(error));
     } finally {
@@ -237,6 +252,9 @@ export function AdminBoothReservationApproval() {
                             <BoothReservationQr qrCode={reservation.qrCode} />
                           </div>
                         ) : null}
+                        {reservation.status === "QR_FAILED" ? (
+                          <QrFailureResult reservation={reservation} />
+                        ) : null}
                       </div>
                     ))
                   ) : (
@@ -272,6 +290,28 @@ export function AdminBoothReservationApproval() {
                       <dd className="font-medium">{selectedReservation.statusDescription}</dd>
                     </div>
                   </dl>
+                  {selectedReservation.status === "QR_FAILED" ? (
+                    <div className="border border-rose-300/35 bg-rose-500/12 p-3 text-sm text-rose-100">
+                      이전 QR 발급이 실패했습니다. 재승인하면 QR 발급을 다시 시도합니다.
+                    </div>
+                  ) : null}
+
+                  <label className="flex items-start gap-3 border border-white/12 bg-white/5 p-3 text-sm">
+                    <input
+                      aria-label="QR 발급 실패 시뮬레이션"
+                      checked={simulateQrFailure}
+                      className="mt-1"
+                      id={QR_FAILURE_SIMULATION_INPUT_ID}
+                      onChange={(event) => setSimulateQrFailure(event.target.checked)}
+                      type="checkbox"
+                    />
+                    <span>
+                      <span className="block font-bold">QR 발급 실패 시뮬레이션</span>
+                      <span className="text-text-secondary mt-1 block">
+                        테스트용으로 승인 후 QR 발급 실패와 보상 처리를 확인합니다.
+                      </span>
+                    </span>
+                  </label>
 
                   <button
                     className="bg-brand-mint h-11 w-full px-4 text-sm font-bold text-zinc-950 transition hover:bg-emerald-200 disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-white/45"
@@ -279,7 +319,11 @@ export function AdminBoothReservationApproval() {
                     onClick={handleApprove}
                     type="button"
                   >
-                    {isApproving ? "승인 중" : "승인하고 QR 발급"}
+                    {isApproving
+                      ? "승인 중"
+                      : selectedReservation.status === "QR_FAILED"
+                        ? "재승인하고 QR 재발급"
+                        : "승인하고 QR 발급"}
                   </button>
                 </div>
               ) : (
@@ -291,6 +335,46 @@ export function AdminBoothReservationApproval() {
       </section>
     </main>
   );
+}
+
+function QrFailureResult({ reservation }: { reservation: BoothReservationApplication }) {
+  const latestCompensation = reservation.compensationLogs[0];
+
+  return (
+    <div className="mt-4 border border-rose-300/35 bg-rose-500/12 p-3 text-sm text-rose-100">
+      <p className="font-bold">QR 발급 실패</p>
+      <p className="mt-1 text-rose-100/85">
+        승인 상태가 보상 처리되었습니다. 관리자는 같은 예약을 다시 선택해 QR 발급을 재시도할 수
+        있습니다.
+      </p>
+      {latestCompensation ? (
+        <dl className="mt-3 grid gap-1 text-xs text-rose-100/80">
+          <div className="grid grid-cols-[72px_1fr] gap-2">
+            <dt className="font-semibold">보상 단계</dt>
+            <dd>{latestCompensation.step}</dd>
+          </div>
+          <div className="grid grid-cols-[72px_1fr] gap-2">
+            <dt className="font-semibold">상태 변경</dt>
+            <dd>
+              {latestCompensation.fromStatus} → {latestCompensation.toStatus}
+            </dd>
+          </div>
+          <div className="grid grid-cols-[72px_1fr] gap-2">
+            <dt className="font-semibold">원인</dt>
+            <dd>{latestCompensation.reason}</dd>
+          </div>
+        </dl>
+      ) : null}
+    </div>
+  );
+}
+
+function resolveApprovalSuccessMessage(reservation: BoothReservationApplication) {
+  if (reservation.status === "QR_FAILED") {
+    return `${reservation.applicantName}님의 예약 승인 중 QR 발급이 실패해 보상 처리했습니다.`;
+  }
+
+  return `${reservation.applicantName}님의 예약을 승인하고 QR을 발급했습니다.`;
 }
 
 function AdminAccessMessage({ title, description }: { title: string; description: string }) {

@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -23,10 +24,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final CorsConfigurationSource corsConfigurationSource;
 
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    return http.csrf(AbstractHttpConfigurer::disable)
+    return http.cors(cors -> cors.configurationSource(corsConfigurationSource))
+        .csrf(AbstractHttpConfigurer::disable)
         .httpBasic(AbstractHttpConfigurer::disable)
         .formLogin(AbstractHttpConfigurer::disable)
         .sessionManagement(
@@ -44,6 +47,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/health")
                     .permitAll()
+                    .requestMatchers("/api/admin/auth/signup")
+                    .permitAll()
                     .requestMatchers(
                         HttpMethod.GET,
                         "/api/booths",
@@ -54,6 +59,8 @@ public class SecurityConfig {
                         "/api/performances/**",
                         "/api/map-locations",
                         "/api/map-locations/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/booth-reservations/*")
                     .permitAll()
                     .requestMatchers("/api/admin/**")
                     .hasRole("ADMIN")

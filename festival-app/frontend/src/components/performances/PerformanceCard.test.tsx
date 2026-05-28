@@ -13,6 +13,7 @@ const performance: Performance = {
   location: "대운동장 메인 스테이지",
   description: "축제 첫날 밤을 여는 메인 스테이지 공연입니다.",
   totalSeats: 500,
+  reservedSeats: 372,
   remainingSeats: 128,
 };
 

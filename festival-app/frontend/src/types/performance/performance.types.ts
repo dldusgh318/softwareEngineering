@@ -7,5 +7,6 @@ export type Performance = {
   location: string;
   description: string;
   totalSeats: number;
+  reservedSeats: number;
   remainingSeats: number;
 };

@@ -13,6 +13,7 @@ type PerformanceReservationPanelProps = {
   reservation: TicketReservation | null;
   errorMessage: string;
   onReserve: () => void;
+  redirectPath?: string;
 };
 
 export default function PerformanceReservationPanel({
@@ -23,6 +24,7 @@ export default function PerformanceReservationPanel({
   reservation,
   errorMessage,
   onReserve,
+  redirectPath = "/performances",
 }: PerformanceReservationPanelProps) {
   const isSoldOut = performance.remainingSeats <= 0;
 
@@ -60,7 +62,7 @@ export default function PerformanceReservationPanel({
         </button>
       ) : !isAuthenticated ? (
         <Link
-          href={`/login?redirect=/performances/${performance.id}`}
+          href={`/login?redirect=${redirectPath}`}
           className="bg-brand-coral hover:bg-brand-coral-soft hover:text-brand-navy mt-5 inline-flex h-11 w-full items-center justify-center rounded-full text-sm font-black text-white transition"
         >
           로그인하고 예매하기

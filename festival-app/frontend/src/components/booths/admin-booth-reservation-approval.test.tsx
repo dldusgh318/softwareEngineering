@@ -112,6 +112,7 @@ describe("AdminBoothReservationApproval", () => {
     expect(mockedApproveBoothReservation).toHaveBeenCalledWith("reservation-1", {
       approverId: "admin-1",
       approverName: "관리자",
+      simulateQrFailure: false,
     });
     expect(
       await screen.findByText("홍길동님의 예약을 승인하고 QR을 발급했습니다."),
@@ -122,6 +123,65 @@ describe("AdminBoothReservationApproval", () => {
     expect(
       screen.getByLabelText("예약 QR http://localhost:3000/booths/reservations/reservation-1"),
     ).toBeInTheDocument();
+  });
+
+  it("shows QR failure result and keeps reservation retryable", async () => {
+    const user = userEvent.setup();
+    mockedGetPendingBoothReservations.mockResolvedValue([
+      reservationApplication({ id: "reservation-1", applicantName: "홍길동" }),
+    ]);
+    mockedApproveBoothReservation.mockResolvedValue(
+      reservationApplication({
+        id: "reservation-1",
+        applicantName: "홍길동",
+        status: "QR_FAILED",
+        statusDescription: "QR 발급 실패",
+        compensationLogs: [
+          {
+            step: "APPROVAL_ROLLBACK",
+            reason: "QR 발급 시뮬레이션 실패",
+            fromStatus: "APPROVED",
+            toStatus: "QR_FAILED",
+            createdAt: "2026-05-24T10:05:00",
+          },
+        ],
+        sagaLogs: [
+          {
+            step: "APPROVED",
+            message: "관리자가 예약 신청을 승인했습니다.",
+            createdAt: "2026-05-24T10:05:00",
+          },
+          {
+            step: "QR_ISSUE_FAILED",
+            message: "QR 발급 시뮬레이션 실패",
+            createdAt: "2026-05-24T10:05:00",
+          },
+          {
+            step: "APPROVAL_COMPENSATED",
+            message: "QR 발급 실패로 승인 상태를 보상 처리했습니다.",
+            createdAt: "2026-05-24T10:05:00",
+          },
+        ],
+      }),
+    );
+
+    render(<AdminBoothReservationApproval />);
+
+    await screen.findByRole("button", { name: /홍길동/ });
+    await user.click(screen.getByLabelText("QR 발급 실패 시뮬레이션"));
+    await user.click(screen.getByRole("button", { name: "승인하고 QR 발급" }));
+
+    expect(mockedApproveBoothReservation).toHaveBeenCalledWith("reservation-1", {
+      approverId: "admin-1",
+      approverName: "관리자",
+      simulateQrFailure: true,
+    });
+    expect(
+      await screen.findByText("홍길동님의 예약 승인 중 QR 발급이 실패해 보상 처리했습니다."),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("QR 발급 실패")).not.toHaveLength(0);
+    expect(screen.getByText("QR 발급 시뮬레이션 실패")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "재승인하고 QR 재발급" })).toBeInTheDocument();
   });
 });
 
@@ -138,6 +198,7 @@ function reservationApplication(
     statusDescription: "관리자 승인 대기",
     qrCode: null,
     sagaLogs: [],
+    compensationLogs: [],
     createdAt: "2026-05-24T10:00:00",
     updatedAt: "2026-05-24T10:00:00",
     ...overrides,

@@ -12,9 +12,10 @@ public record PerformanceResponse(
     String location,
     String description,
     int totalSeats,
+    int reservedSeats,
     int remainingSeats) {
 
-  public static PerformanceResponse from(Performance performance, int remainingSeats) {
+  public static PerformanceResponse from(Performance performance, int reservedSeats) {
     return new PerformanceResponse(
         performance.id(),
         performance.title(),
@@ -24,6 +25,7 @@ public record PerformanceResponse(
         performance.location(),
         performance.description(),
         performance.totalSeats(),
-        remainingSeats);
+        reservedSeats,
+        Math.max(performance.totalSeats() - reservedSeats, 0));
   }
 }

@@ -286,7 +286,8 @@ export JWT_SECRET="replace-with-at-least-32-byte-secret-key"
 mvn spring-boot:run
 ```
 
-JWT 만료 시간은 필요하면 `JWT_EXPIRATION_MILLIS` 환경변수로 조정할 수 있습니다.
+`JWT_SECRET`을 생략하면 로컬 개발용 기본값을 사용합니다. JWT 만료 시간은 필요하면
+`JWT_EXPIRATION_MILLIS` 환경변수로 조정할 수 있습니다.
 
 기본 서버 주소:
 
