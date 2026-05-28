@@ -8,14 +8,18 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.festivalapp.domain.auth.UserRole;
 import com.festivalapp.dto.BoothReservationCreateRequest;
 import com.festivalapp.dto.BoothReservationResponse;
+import com.festivalapp.security.AuthenticatedUser;
 import com.festivalapp.service.BoothReservationService;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -37,6 +41,7 @@ class BoothReservationControllerTest {
         .willReturn(reservationResponse("reservation-1", "user-1"));
 
     mockMvc.perform(post("/api/booth-reservations")
+            .principal(authenticatedUser("user-1"))
             .contentType(MediaType.APPLICATION_JSON)
             .content("""
                 {
@@ -57,10 +62,18 @@ class BoothReservationControllerTest {
     given(boothReservationService.getReservationsByApplicant("user-1"))
         .willReturn(List.of(reservationResponse("reservation-1", "user-1")));
 
-    mockMvc.perform(get("/api/booth-reservations/applicants/user-1"))
+    mockMvc.perform(get("/api/booth-reservations/applicants/user-1")
+            .principal(authenticatedUser("user-1")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].id").value("reservation-1"))
         .andExpect(jsonPath("$[0].applicantId").value("user-1"));
+  }
+
+  @Test
+  void getReservationsByApplicantRejectsOtherUser() throws Exception {
+    mockMvc.perform(get("/api/booth-reservations/applicants/user-2")
+            .principal(authenticatedUser("user-1")))
+        .andExpect(status().isForbidden());
   }
 
   @Test
@@ -85,7 +98,14 @@ class BoothReservationControllerTest {
         "관리자 승인 대기",
         null,
         List.of(),
+        List.of(),
         now,
         now);
+  }
+
+  private Authentication authenticatedUser(String userId) {
+    return new TestingAuthenticationToken(
+        new AuthenticatedUser(userId, userId + "@hongik.ac.kr", UserRole.USER),
+        null);
   }
 }

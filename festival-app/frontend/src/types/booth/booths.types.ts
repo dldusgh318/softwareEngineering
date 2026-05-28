@@ -21,6 +21,7 @@ export type BoothReservationStatus =
   | "PENDING_APPROVAL"
   | "APPROVED"
   | "RESERVED"
+  | "QR_FAILED"
   | "CHECKED_IN"
   | "COMPLETED"
   | "CANCELLED";
@@ -42,6 +43,7 @@ export type BoothReservationApplication = {
   statusDescription: string;
   qrCode: string | null;
   sagaLogs: BoothReservationSagaLog[];
+  compensationLogs: BoothReservationCompensationLog[];
   createdAt: string;
   updatedAt: string;
 };
@@ -55,9 +57,18 @@ export type BoothReservationSagaLog = {
 export type BoothReservationApprovalRequest = {
   approverId: string;
   approverName: string;
+  simulateQrFailure?: boolean;
 };
 
-export type QrFailureReservationStatus = BoothReservationStatus | "QR_FAILED";
+export type BoothReservationCompensationLog = {
+  step: string;
+  reason: string;
+  fromStatus: BoothReservationStatus;
+  toStatus: BoothReservationStatus;
+  createdAt: string;
+};
+
+export type QrFailureReservationStatus = BoothReservationStatus;
 
 export type CompensationLog = {
   id: string;

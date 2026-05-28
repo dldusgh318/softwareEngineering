@@ -8,9 +8,9 @@ import SiteHeader from "@/components/SiteHeader";
 import { useAuth } from "@/providers/AuthProvider";
 import { getAuthErrorMessage } from "@/utils/auth-error";
 
-export default function SignupPage() {
+export default function AdminSignupPage() {
   const router = useRouter();
-  const { signup } = useAuth();
+  const { signupAdmin } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,8 +23,8 @@ export default function SignupPage() {
     setIsSubmitting(true);
 
     try {
-      await signup({ name, email, password });
-      router.replace("/");
+      await signupAdmin({ name, email, password });
+      router.replace("/booths/admin/reservations");
     } catch (error) {
       setErrorMessage(await getAuthErrorMessage(error));
     } finally {
@@ -46,10 +46,10 @@ export default function SignupPage() {
       <section className="relative z-10 mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-7xl items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-md rounded-4xl border border-white/14 bg-white/11 p-5 shadow-[0_30px_90px_rgba(0,0,0,0.24)] backdrop-blur-xl sm:p-7">
           <div>
-            <p className="text-brand-coral-soft text-sm font-black">SIGN UP</p>
-            <h1 className="mt-2 text-3xl font-black">회원가입</h1>
+            <p className="text-brand-mint-soft text-sm font-black">ADMIN SIGN UP</p>
+            <h1 className="mt-2 text-3xl font-black">관리자 가입</h1>
             <p className="typo-caption text-text-muted mt-3">
-              축제 플랫폼을 이용할 계정을 만들어주세요.
+              부스 예약 승인과 QR 발급 처리를 담당할 관리자 계정을 만듭니다.
             </p>
           </div>
 
@@ -62,7 +62,7 @@ export default function SignupPage() {
                 required
                 type="text"
                 value={name}
-                placeholder="홍길동"
+                placeholder="관리자"
                 className="focus:border-brand-cream h-12 rounded-2xl border border-white/14 bg-white/10 px-4 text-white transition outline-none placeholder:text-white/36 focus:bg-white/14"
               />
             </label>
@@ -75,7 +75,7 @@ export default function SignupPage() {
                 required
                 type="email"
                 value={email}
-                placeholder="wow@hongik.ac.kr"
+                placeholder="admin@hongik.ac.kr"
                 className="focus:border-brand-cream h-12 rounded-2xl border border-white/14 bg-white/10 px-4 text-white transition outline-none placeholder:text-white/36 focus:bg-white/14"
               />
             </label>
@@ -103,22 +103,16 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-brand-coral shadow-brand-coral/25 hover:bg-brand-coral-soft hover:text-brand-navy h-12 rounded-2xl text-sm font-black text-white shadow-lg transition hover:-translate-y-0.5"
+              className="bg-brand-mint shadow-brand-mint/20 hover:bg-brand-mint-soft h-12 rounded-2xl text-sm font-black text-zinc-950 shadow-lg transition hover:-translate-y-0.5"
             >
-              {isSubmitting ? "가입 중" : "가입하기"}
+              {isSubmitting ? "가입 중" : "관리자 가입"}
             </button>
           </form>
 
           <p className="typo-caption text-text-muted mt-6 text-center">
-            이미 계정이 있다면{" "}
-            <Link href="/login" className="text-brand-cream font-black">
-              로그인
-            </Link>
-          </p>
-          <p className="typo-caption text-text-muted mt-3 text-center">
-            관리자 계정은{" "}
-            <Link href="/admin/signup" className="text-brand-cream font-black">
-              관리자 가입
+            일반 계정은{" "}
+            <Link href="/signup" className="text-brand-cream font-black">
+              회원가입
             </Link>
           </p>
         </div>

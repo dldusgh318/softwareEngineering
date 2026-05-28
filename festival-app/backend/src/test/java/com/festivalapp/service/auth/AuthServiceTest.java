@@ -36,13 +36,25 @@ class AuthServiceTest {
   }
 
   @Test
-  void signupCreatesAdminUserWhenRoleIsAdmin() {
+  void signupCreatesUserEvenWhenRoleIsAdmin() {
     AuthResponse response =
         authService.signup(
             new SignupRequest("관리자", "admin@hongik.ac.kr", "password123", UserRole.ADMIN));
 
-    assertThat(response.user().role()).isEqualTo(UserRole.ADMIN);
+    assertThat(response.user().role()).isEqualTo(UserRole.USER);
     assertThat(userRepository.findByEmail("admin@hongik.ac.kr"))
+        .get()
+        .extracting("role")
+        .isEqualTo(UserRole.USER);
+  }
+
+  @Test
+  void signupAdminCreatesAdminUser() {
+    AuthResponse response =
+        authService.signupAdmin(new SignupRequest("관리자", "real-admin@hongik.ac.kr", "password123"));
+
+    assertThat(response.user().role()).isEqualTo(UserRole.ADMIN);
+    assertThat(userRepository.findByEmail("real-admin@hongik.ac.kr"))
         .get()
         .extracting("role")
         .isEqualTo(UserRole.ADMIN);

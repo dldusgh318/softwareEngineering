@@ -8,7 +8,12 @@ import {
   getBooths,
 } from "@/apis/booths/booth.api";
 import { BoothDirectory } from "@/components/booths/booth-directory";
+import type { AuthUser } from "@/types/auth.types";
 import type { Booth, BoothReservationApplication } from "@/types/booth/booths.types";
+
+const authState = vi.hoisted(() => ({
+  user: null as AuthUser | null,
+}));
 
 vi.mock("@/apis/booths/booth.api", () => ({
   createBoothReservation: vi.fn(),
@@ -18,6 +23,19 @@ vi.mock("@/apis/booths/booth.api", () => ({
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/booths",
+}));
+
+vi.mock("@/providers/AuthProvider", () => ({
+  useAuth: () => ({
+    accessToken: authState.user ? "access-token" : null,
+    user: authState.user,
+    isInitialized: true,
+    isAuthenticated: Boolean(authState.user),
+    login: vi.fn(),
+    signup: vi.fn(),
+    signupAdmin: vi.fn(),
+    logout: vi.fn(),
+  }),
 }));
 
 const booths: Booth[] = [
@@ -62,7 +80,7 @@ const mockedGetBoothReservationsByApplicant = vi.mocked(getBoothReservationsByAp
 describe("BoothDirectory", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    window.localStorage.clear();
+    authState.user = null;
     mockedGetBoothReservationsByApplicant.mockResolvedValue([]);
   });
 
@@ -131,7 +149,7 @@ describe("BoothDirectory", () => {
 
     expect(mockedCreateBoothReservation).toHaveBeenCalledWith({
       boothId: "booth-1",
-      applicantId: "demo-user-1",
+      applicantId: "user-1",
       applicantName: "홍길동",
       requestedTables: 2,
     });
@@ -204,12 +222,13 @@ describe("BoothDirectory", () => {
     mockedGetBooths.mockResolvedValue(booths);
     mockedGetBoothReservationsByApplicant.mockResolvedValue([reservationApplication()]);
 
-    render(<BoothDirectory />);
+    const { rerender } = render(<BoothDirectory />);
 
     expect(await screen.findByText("신청 테이블 2개")).toBeInTheDocument();
 
     await act(async () => {
-      window.localStorage.clear();
+      authState.user = null;
+      rerender(<BoothDirectory />);
     });
 
     expect(
@@ -238,6 +257,32 @@ describe("BoothDirectory", () => {
       screen.getByLabelText("예약 QR http://localhost:3000/booths/reservations/reservation-1"),
     ).toBeInTheDocument();
   });
+
+  it("shows QR failure status and retry guidance for failed reservation", async () => {
+    setLoggedInApplicant();
+    mockedGetBooths.mockResolvedValue(booths);
+    mockedGetBoothReservationsByApplicant.mockResolvedValue([
+      reservationApplication({
+        status: "QR_FAILED",
+        statusDescription: "QR 발급 실패",
+        compensationLogs: [
+          {
+            step: "APPROVAL_ROLLBACK",
+            reason: "QR 발급 시뮬레이션 실패",
+            fromStatus: "APPROVED",
+            toStatus: "QR_FAILED",
+            createdAt: "2026-05-24T10:05:00",
+          },
+        ],
+      }),
+    ]);
+
+    render(<BoothDirectory />);
+
+    expect(await screen.findAllByText("QR 발급 실패")).not.toHaveLength(0);
+    expect(screen.getAllByText("관리자 재승인 후 QR 재발급이 필요합니다.")).not.toHaveLength(0);
+    expect(screen.getAllByText("QR 발급 시뮬레이션 실패")).not.toHaveLength(0);
+  });
 });
 
 function reservationApplication(
@@ -253,6 +298,7 @@ function reservationApplication(
     statusDescription: "관리자 승인 대기",
     qrCode: null,
     sagaLogs: [],
+    compensationLogs: [],
     createdAt: "2026-05-24T10:00:00",
     updatedAt: "2026-05-24T10:00:00",
     ...overrides,
@@ -260,11 +306,10 @@ function reservationApplication(
 }
 
 function setLoggedInApplicant() {
-  window.localStorage.setItem(
-    "festival-app-current-user",
-    JSON.stringify({
-      id: "demo-user-1",
-      name: "홍길동",
-    }),
-  );
+  authState.user = {
+    id: "user-1",
+    name: "홍길동",
+    email: "user1@hongik.ac.kr",
+    role: "USER",
+  };
 }

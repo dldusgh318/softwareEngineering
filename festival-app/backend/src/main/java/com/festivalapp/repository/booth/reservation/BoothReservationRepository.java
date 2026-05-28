@@ -54,6 +54,10 @@ public class BoothReservationRepository {
     return boothReservationDataSource.save(reservation);
   }
 
+  public BoothReservation saveIfAvailable(BoothReservation reservation, int availableTables) {
+    return boothReservationDataSource.saveIfAvailable(reservation, availableTables);
+  }
+
   public BoothReservation update(BoothReservation reservation) {
     return boothReservationDataSource.update(reservation);
   }
