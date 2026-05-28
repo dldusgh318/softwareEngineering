@@ -15,7 +15,12 @@ public class InMemoryQrCodeIssuer implements QrCodeIssuer {
   }
 
   @Override
-  public String issue(BoothReservation reservation) {
+  public String issue(QrCodeIssueCommand command) {
+    if (command.simulateFailure()) {
+      throw new QrCodeIssueException("QR 발급 시뮬레이션 실패");
+    }
+
+    BoothReservation reservation = command.reservation();
     return frontendBaseUrl + "/booths/reservations/" + reservation.id();
   }
 }

@@ -30,6 +30,7 @@ describe("BoothReservationVerification", () => {
       statusDescription: "QR 발급 완료",
       qrCode: "http://localhost:3000/booths/reservations/reservation-1",
       sagaLogs: [],
+      compensationLogs: [],
       createdAt: "2026-05-24T10:00:00",
       updatedAt: "2026-05-24T10:05:00",
     });

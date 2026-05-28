@@ -5,6 +5,10 @@ export async function signup(request: SignupRequest) {
   return apiClient.post("api/auth/signup", { json: request }).json<AuthResponse>();
 }
 
+export async function signupAdmin(request: SignupRequest) {
+  return apiClient.post("api/admin/auth/signup", { json: request }).json<AuthResponse>();
+}
+
 export async function login(request: LoginRequest) {
   return apiClient.post("api/auth/login", { json: request }).json<AuthResponse>();
 }

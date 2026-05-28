@@ -1,29 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { getBoothReservationsByApplicant, getBooths } from "@/apis/booths/booth.api";
 import { BoothCard } from "@/components/booths/booth-card";
 import { BoothDetailPanel } from "@/components/booths/booth-detail-panel";
 import { BoothReservationListPanel } from "@/components/booths/booth-reservation-list-panel";
 import SiteHeader from "@/components/SiteHeader";
-import {
-  getApplicantSnapshot,
-  parseApplicantSnapshot,
-  subscribeToApplicantChange,
-} from "@/lib/current-applicant";
+import { useAuth } from "@/providers/AuthProvider";
 import type { Booth, BoothReservationApplication } from "@/types/booth/booths.types";
 
 export function BoothDirectory() {
-  const applicantSnapshot = useSyncExternalStore(
-    subscribeToApplicantChange,
-    getApplicantSnapshot,
-    () => null,
-  );
-  const currentApplicant = useMemo(
-    () => parseApplicantSnapshot(applicantSnapshot),
-    [applicantSnapshot],
-  );
+  const { isInitialized, user } = useAuth();
+  const currentApplicant = useMemo(() => (user ? { id: user.id, name: user.name } : null), [user]);
   const [booths, setBooths] = useState<Booth[]>([]);
   const [reservations, setReservations] = useState<BoothReservationApplication[]>([]);
   const [selectedBoothId, setSelectedBoothId] = useState("");
@@ -71,7 +60,7 @@ export function BoothDirectory() {
   }, []);
 
   useEffect(() => {
-    if (!currentApplicant) {
+    if (!isInitialized || !currentApplicant) {
       queueMicrotask(() => setReservations([]));
       return;
     }
@@ -95,7 +84,7 @@ export function BoothDirectory() {
       isActive = false;
       controller.abort();
     };
-  }, [currentApplicant]);
+  }, [currentApplicant, isInitialized]);
 
   function handleReservationCreated(reservation: BoothReservationApplication) {
     setReservations((currentReservations) => [reservation, ...currentReservations]);

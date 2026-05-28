@@ -115,10 +115,11 @@ class BoothReservationServiceTest {
     BoothRepository boothRepository = new BoothRepository(() -> booths);
     BoothReservationRepository reservationRepository =
         new BoothReservationRepository(new TestBoothReservationDataSource(reservations));
-    BoothReservationAvailabilityPolicy availabilityPolicy =
-        new BoothReservationAvailabilityPolicy(reservationRepository);
 
-    return new BoothReservationService(boothRepository, reservationRepository, availabilityPolicy);
+    return new BoothReservationService(
+        boothRepository,
+        reservationRepository,
+        new BoothReservationAvailabilityPolicy());
   }
 
   private BoothReservation reservation(

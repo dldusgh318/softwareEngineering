@@ -1,5 +1,6 @@
 package com.festivalapp.api;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -66,6 +67,27 @@ class AdminBoothReservationControllerTest {
             .value("http://localhost:3000/booths/reservations/reservation-1"));
   }
 
+  @Test
+  void approveReservationCanReturnQrFailureCompensationResult() throws Exception {
+    given(approvalService.approveReservation(
+        org.mockito.ArgumentMatchers.eq("reservation-1"),
+        org.mockito.ArgumentMatchers.any(BoothReservationApprovalRequest.class)))
+        .willReturn(reservationResponse("reservation-1", "QR_FAILED", null));
+
+    mockMvc.perform(post("/api/admin/booth-reservations/reservation-1/approve")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("""
+                {
+                  "approverId": "admin-1",
+                  "approverName": "관리자",
+                  "simulateQrFailure": true
+                }
+                """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("QR_FAILED"))
+        .andExpect(jsonPath("$.qrCode").value(nullValue()));
+  }
+
   private BoothReservationResponse reservationResponse(String id, String status, String qrCode) {
     LocalDateTime now = LocalDateTime.of(2026, 5, 24, 10, 0);
     return new BoothReservationResponse(
@@ -77,6 +99,7 @@ class AdminBoothReservationControllerTest {
         status,
         status,
         qrCode,
+        List.of(),
         List.of(),
         now,
         now);

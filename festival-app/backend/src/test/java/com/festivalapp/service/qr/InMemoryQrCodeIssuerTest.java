@@ -1,6 +1,7 @@
 package com.festivalapp.service.qr;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.festivalapp.domain.booth.reservation.BoothReservation;
 import com.festivalapp.domain.booth.reservation.BoothReservationStatus;
@@ -13,10 +14,19 @@ class InMemoryQrCodeIssuerTest {
   void issueReturnsReservationVerificationUrl() {
     InMemoryQrCodeIssuer issuer = new InMemoryQrCodeIssuer("https://festival.example.com");
 
-    String qrCode = issuer.issue(reservation());
+    String qrCode = issuer.issue(new QrCodeIssueCommand(reservation(), false));
 
     assertThat(qrCode)
         .isEqualTo("https://festival.example.com/booths/reservations/reservation-1");
+  }
+
+  @Test
+  void issueThrowsExceptionWhenFailureIsSimulated() {
+    InMemoryQrCodeIssuer issuer = new InMemoryQrCodeIssuer("https://festival.example.com");
+
+    assertThatThrownBy(() -> issuer.issue(new QrCodeIssueCommand(reservation(), true)))
+        .isInstanceOf(QrCodeIssueException.class)
+        .hasMessage("QR 발급 시뮬레이션 실패");
   }
 
   private BoothReservation reservation() {

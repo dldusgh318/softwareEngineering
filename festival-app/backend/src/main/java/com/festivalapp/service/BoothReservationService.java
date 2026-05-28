@@ -6,13 +6,16 @@ import com.festivalapp.domain.booth.reservation.BoothReservationStatus;
 import com.festivalapp.dto.BoothReservationCreateRequest;
 import com.festivalapp.dto.BoothReservationResponse;
 import com.festivalapp.repository.booth.BoothRepository;
+import com.festivalapp.repository.booth.reservation.BoothReservationCapacityExceededException;
 import com.festivalapp.repository.booth.reservation.BoothReservationRepository;
+import com.festivalapp.repository.booth.reservation.DuplicateBoothReservationException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -23,6 +26,7 @@ public class BoothReservationService {
   private final BoothReservationRepository boothReservationRepository;
   private final BoothReservationAvailabilityPolicy availabilityPolicy;
 
+  @Transactional
   public BoothReservationResponse createReservation(BoothReservationCreateRequest request) {
     if (request == null || isBlank(request.boothId())) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "예약할 부스 정보가 필요합니다.");
@@ -33,16 +37,25 @@ public class BoothReservationService {
 
     availabilityPolicy.validate(booth, request);
 
-    return BoothReservationResponse.from(boothReservationRepository.save(
-        createPendingApprovalReservation(booth, request)));
+    try {
+      return BoothReservationResponse.from(boothReservationRepository.saveIfAvailable(
+          createPendingApprovalReservation(booth, request),
+          booth.availableTables()));
+    } catch (DuplicateBoothReservationException exception) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, exception.getMessage());
+    } catch (BoothReservationCapacityExceededException exception) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, exception.getMessage());
+    }
   }
 
+  @Transactional(readOnly = true)
   public List<BoothReservationResponse> getReservationsByApplicant(String applicantId) {
     return boothReservationRepository.findByApplicantId(applicantId).stream()
         .map(BoothReservationResponse::from)
         .toList();
   }
 
+  @Transactional(readOnly = true)
   public BoothReservationResponse getReservation(String reservationId) {
     return boothReservationRepository.findById(reservationId)
         .map(BoothReservationResponse::from)

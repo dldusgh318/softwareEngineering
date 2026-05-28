@@ -1,11 +1,13 @@
 package com.festivalapp.api;
 
+import com.festivalapp.domain.map.MapLocationCategory;
 import com.festivalapp.dto.MapLocationResponse;
 import com.festivalapp.service.MapLocationService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,7 +19,8 @@ public class MapLocationController {
   private final MapLocationService mapLocationService;
 
   @GetMapping
-  ResponseEntity<List<MapLocationResponse>> getMapLocations() {
-    return ResponseEntity.ok(mapLocationService.getMapLocations());
+  ResponseEntity<List<MapLocationResponse>> getMapLocations(
+      @RequestParam(required = false) MapLocationCategory category) {
+    return ResponseEntity.ok(mapLocationService.getMapLocations(category));
   }
 }

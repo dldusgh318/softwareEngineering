@@ -1,4 +1,4 @@
-export type MapLocationCategory = "STAGE" | "BOOTH" | "FOOD" | "INFO" | "AMENITY";
+export type MapLocationCategory = "STAGE" | "BOOTH" | "INFO" | "AMENITY";
 
 export type MapLocation = {
   id: number;

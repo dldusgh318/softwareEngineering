@@ -12,5 +12,7 @@ public interface BoothReservationDataSource {
 
   BoothReservation save(BoothReservation reservation);
 
+  BoothReservation saveIfAvailable(BoothReservation reservation, int availableTables);
+
   BoothReservation update(BoothReservation reservation);
 }
