@@ -215,6 +215,19 @@ describe("AdminBoothReservationApproval", () => {
     expect(screen.getByText("현장 체크인 완료")).toBeInTheDocument();
   });
 
+  it("does not request check-in without QR code", async () => {
+    const user = userEvent.setup();
+    mockedGetPendingBoothReservations.mockResolvedValue([]);
+
+    render(<AdminBoothReservationApproval />);
+
+    await screen.findByText("승인 대기 예약이 없습니다.");
+    await user.click(screen.getByRole("button", { name: "QR 체크인" }));
+
+    expect(mockedCheckInBoothReservation).not.toHaveBeenCalled();
+    expect(screen.getByText("체크인할 QR 정보를 입력해주세요.")).toBeInTheDocument();
+  });
+
   it("shows check-in error message from API", async () => {
     const user = userEvent.setup();
     mockedGetPendingBoothReservations.mockResolvedValue([]);

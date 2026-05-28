@@ -60,6 +60,10 @@ export type BoothReservationApprovalRequest = {
   simulateQrFailure?: boolean;
 };
 
+export type BoothReservationCheckInRequest = {
+  qrCode: string;
+};
+
 export type BoothReservationCompensationLog = {
   step: string;
   reason: string;
