@@ -45,8 +45,14 @@ public class TicketReservation {
     updatedAt = now;
   }
 
+  public void fail(LocalDateTime now) {
+    status = TicketReservationStatus.FAILED;
+    updatedAt = now;
+  }
+
   public boolean isSeatOccupying() {
-    return status != TicketReservationStatus.CANCELLED;
+    return status != TicketReservationStatus.CANCELLED
+        && status != TicketReservationStatus.FAILED;
   }
 
   public String id() {

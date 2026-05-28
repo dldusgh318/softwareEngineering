@@ -13,6 +13,8 @@ import com.festivalapp.repository.performance.PerformanceRepository;
 import com.festivalapp.repository.ticket.TestTicketReservationDataSource;
 import com.festivalapp.repository.ticket.TicketReservationRepository;
 import com.festivalapp.service.ticket.TicketQrCodeIssuer;
+import com.festivalapp.service.ticket.TicketReservationSagaProcessor;
+import com.festivalapp.service.ticket.TicketReservationTransactionService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,13 +72,49 @@ class TicketReservationServiceTest {
         .isEqualTo(HttpStatus.CONFLICT);
   }
 
+  @Test
+  void reserveTicketMarksReservationFailedWhenQrIssueFails() {
+    List<TicketReservation> reservations = new ArrayList<>();
+    TicketReservationService ticketReservationService =
+        serviceWith(
+            reservations,
+            performance(2),
+            new TicketQrCodeIssuer("http://localhost:3000") {
+              @Override
+              public String issue(TicketReservation reservation) {
+                throw new IllegalStateException("QR 발급 실패");
+              }
+            });
+
+    assertThatThrownBy(
+            () -> ticketReservationService.reserveTicket("user-1", new TicketReservationCreateRequest(1L)))
+        .isInstanceOf(ResponseStatusException.class)
+        .extracting("statusCode")
+        .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+    assertThat(reservations).hasSize(1);
+    assertThat(reservations.get(0).status()).isEqualTo(TicketReservationStatus.FAILED);
+    assertThat(reservations.get(0).isSeatOccupying()).isFalse();
+  }
+
   private TicketReservationService serviceWith(
       List<TicketReservation> reservations,
       Performance performance) {
+    return serviceWith(reservations, performance, new TicketQrCodeIssuer("http://localhost:3000"));
+  }
+
+  private TicketReservationService serviceWith(
+      List<TicketReservation> reservations,
+      Performance performance,
+      TicketQrCodeIssuer ticketQrCodeIssuer) {
+    TicketReservationRepository ticketReservationRepository =
+        new TicketReservationRepository(new TestTicketReservationDataSource(reservations));
+    TicketReservationTransactionService transactionService =
+        new TicketReservationTransactionService(ticketReservationRepository);
+
     return new TicketReservationService(
         new PerformanceRepository(() -> List.of(performance)),
-        new TicketReservationRepository(new TestTicketReservationDataSource(reservations)),
-        new TicketQrCodeIssuer("http://localhost:3000"));
+        ticketReservationRepository,
+        new TicketReservationSagaProcessor(transactionService, ticketQrCodeIssuer));
   }
 
   private Performance performance(int totalSeats) {

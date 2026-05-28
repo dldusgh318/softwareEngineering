@@ -10,6 +10,7 @@ public enum TicketReservationStatus {
   RESERVATION_CREATED("예매 생성"),
   QR_ISSUED("QR 티켓 발급"),
   COMPLETED("예매 완료"),
+  FAILED("예매 실패"),
   CANCELLED("예매 취소");
 
   private final String description;
