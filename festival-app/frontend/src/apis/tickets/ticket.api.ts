@@ -13,3 +13,9 @@ export function getTicketReservation(reservationId: string, signal?: AbortSignal
     .get(`api/ticket-reservations/${reservationId}`, { signal })
     .json<TicketReservation>();
 }
+
+export function cancelTicketReservation(reservationId: string) {
+  return apiClient
+    .post(`api/ticket-reservations/${reservationId}/cancel`)
+    .json<TicketReservation>();
+}

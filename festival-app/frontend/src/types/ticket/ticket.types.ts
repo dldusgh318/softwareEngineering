@@ -3,6 +3,7 @@ export type TicketReservationStatus =
   | "RESERVATION_CREATED"
   | "QR_ISSUED"
   | "COMPLETED"
+  | "FAILED"
   | "CANCELLED";
 
 export type TicketReservationSagaLog = {

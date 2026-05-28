@@ -122,4 +122,50 @@ describe("PerformanceReservationPanel", () => {
     expect(screen.queryByText("SEAT_CHECKED")).not.toBeInTheDocument();
     expect(screen.queryByText("COMPLETED")).not.toBeInTheDocument();
   });
+
+  it("예매 완료 후 취소 버튼을 클릭할 수 있다", async () => {
+    const user = userEvent.setup();
+    const handleCancel = vi.fn();
+
+    renderPanel({ reservation, onCancel: handleCancel });
+
+    await user.click(screen.getByRole("button", { name: "예매 취소하기" }));
+
+    expect(handleCancel).toHaveBeenCalledOnce();
+  });
+
+  it("예매 실패 상태이면 좌석 복구 안내를 표시하고 QR을 숨긴다", () => {
+    renderPanel({
+      reservation: {
+        ...reservation,
+        status: "FAILED",
+        statusDescription: "예매 실패",
+        qrCode: null,
+      },
+    });
+
+    expect(screen.getByText("예매를 완료하지 못했습니다")).toBeInTheDocument();
+    expect(
+      screen.getByText("선점된 좌석은 복구되었습니다. 잠시 후 다시 시도해주세요."),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByLabelText("공연 티켓 QR http://localhost:3000/performances/tickets/ticket-1"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("예매 취소 상태이면 좌석 복구 안내를 표시한다", () => {
+    renderPanel({
+      reservation: {
+        ...reservation,
+        status: "CANCELLED",
+        statusDescription: "예매 취소",
+        qrCode: null,
+      },
+    });
+
+    expect(screen.getByText("예매가 취소되었습니다")).toBeInTheDocument();
+    expect(
+      screen.getByText("취소된 예매의 좌석은 다시 예매 가능 상태로 복구되었습니다."),
+    ).toBeInTheDocument();
+  });
 });
