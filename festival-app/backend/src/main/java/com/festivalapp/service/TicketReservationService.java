@@ -7,6 +7,8 @@ import com.festivalapp.dto.TicketReservationResponse;
 import com.festivalapp.repository.performance.PerformanceRepository;
 import com.festivalapp.repository.ticket.TicketReservationRepository;
 import com.festivalapp.service.ticket.TicketReservationSagaProcessor;
+import com.festivalapp.service.ticket.TicketReservationTransactionService;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,7 @@ public class TicketReservationService {
   private final PerformanceRepository performanceRepository;
   private final TicketReservationRepository ticketReservationRepository;
   private final TicketReservationSagaProcessor ticketReservationSagaProcessor;
+  private final TicketReservationTransactionService ticketReservationTransactionService;
 
   public TicketReservationResponse reserveTicket(
       String userId,
@@ -48,6 +51,12 @@ public class TicketReservationService {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인의 예매 정보만 확인할 수 있습니다.");
     }
 
+    return TicketReservationResponse.from(reservation, List.of());
+  }
+
+  public TicketReservationResponse cancelMyReservation(String userId, String reservationId) {
+    TicketReservation reservation =
+        ticketReservationTransactionService.cancel(reservationId, userId, LocalDateTime.now());
     return TicketReservationResponse.from(reservation, List.of());
   }
 }

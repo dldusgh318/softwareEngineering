@@ -12,7 +12,10 @@ type PerformanceReservationPanelProps = {
   performance: Performance;
   reservation: TicketReservation | null;
   errorMessage: string;
+  cancelErrorMessage?: string;
+  isCancelling?: boolean;
   onReserve: () => void;
+  onCancel?: () => void;
   redirectPath?: string;
 };
 
@@ -23,13 +26,23 @@ export default function PerformanceReservationPanel({
   performance,
   reservation,
   errorMessage,
+  cancelErrorMessage,
+  isCancelling,
   onReserve,
+  onCancel,
   redirectPath = "/performances",
 }: PerformanceReservationPanelProps) {
   const isSoldOut = performance.remainingSeats <= 0;
 
   if (reservation) {
-    return <TicketReservationResult reservation={reservation} />;
+    return (
+      <TicketReservationResult
+        cancelErrorMessage={cancelErrorMessage}
+        isCancelling={isCancelling}
+        reservation={reservation}
+        onCancel={onCancel}
+      />
+    );
   }
 
   return (

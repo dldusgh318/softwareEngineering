@@ -96,6 +96,33 @@ class TicketReservationServiceTest {
     assertThat(reservations.get(0).isSeatOccupying()).isFalse();
   }
 
+  @Test
+  void cancelMyReservationCancelsReservationAndReleasesSeat() {
+    List<TicketReservation> reservations =
+        new ArrayList<>(List.of(ticketReservation("ticket-1", "user-1", 1L)));
+    TicketReservationService ticketReservationService = serviceWith(reservations, performance(1));
+
+    TicketReservationResponse response =
+        ticketReservationService.cancelMyReservation("user-1", "ticket-1");
+
+    assertThat(response.status()).isEqualTo("CANCELLED");
+    assertThat(reservations.get(0).status()).isEqualTo(TicketReservationStatus.CANCELLED);
+    assertThat(reservations.get(0).isSeatOccupying()).isFalse();
+  }
+
+  @Test
+  void cancelMyReservationRejectsOtherUsersReservation() {
+    List<TicketReservation> reservations =
+        new ArrayList<>(List.of(ticketReservation("ticket-1", "user-1", 1L)));
+    TicketReservationService ticketReservationService = serviceWith(reservations, performance(1));
+
+    assertThatThrownBy(() -> ticketReservationService.cancelMyReservation("user-2", "ticket-1"))
+        .isInstanceOf(ResponseStatusException.class)
+        .extracting("statusCode")
+        .isEqualTo(HttpStatus.FORBIDDEN);
+    assertThat(reservations.get(0).status()).isEqualTo(TicketReservationStatus.COMPLETED);
+  }
+
   private TicketReservationService serviceWith(
       List<TicketReservation> reservations,
       Performance performance) {
@@ -114,7 +141,8 @@ class TicketReservationServiceTest {
     return new TicketReservationService(
         new PerformanceRepository(() -> List.of(performance)),
         ticketReservationRepository,
-        new TicketReservationSagaProcessor(transactionService, ticketQrCodeIssuer));
+        new TicketReservationSagaProcessor(transactionService, ticketQrCodeIssuer),
+        transactionService);
   }
 
   private Performance performance(int totalSeats) {

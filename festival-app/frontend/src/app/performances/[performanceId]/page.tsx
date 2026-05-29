@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
 import { getPerformance } from "@/apis/performances/performance.api";
-import { createTicketReservation } from "@/apis/tickets/ticket.api";
+import { cancelTicketReservation, createTicketReservation } from "@/apis/tickets/ticket.api";
 import PerformanceDetailPanel from "@/components/performances/PerformanceDetailPanel";
 import PerformanceReservationPanel from "@/components/performances/PerformanceReservationPanel";
 import SiteHeader from "@/components/SiteHeader";
@@ -22,7 +22,9 @@ export default function PerformanceDetailPage() {
   const performanceDetailPath = `/performances/${params.performanceId}`;
   const [reservation, setReservation] = useState<TicketReservation | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [cancelErrorMessage, setCancelErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const {
     data: performance,
     error,
@@ -36,6 +38,7 @@ export default function PerformanceDetailPage() {
 
   async function handleReserve() {
     setErrorMessage("");
+    setCancelErrorMessage("");
     setIsSubmitting(true);
 
     try {
@@ -44,6 +47,23 @@ export default function PerformanceDetailPage() {
       setErrorMessage(await getAuthErrorMessage(error));
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleCancel() {
+    if (!reservation) {
+      return;
+    }
+
+    setCancelErrorMessage("");
+    setIsCancelling(true);
+
+    try {
+      setReservation(await cancelTicketReservation(reservation.id));
+    } catch (error) {
+      setCancelErrorMessage(await getAuthErrorMessage(error));
+    } finally {
+      setIsCancelling(false);
     }
   }
 
@@ -83,13 +103,16 @@ export default function PerformanceDetailPage() {
             <>
               <PerformanceDetailPanel performance={performance} />
               <PerformanceReservationPanel
+                cancelErrorMessage={cancelErrorMessage}
                 errorMessage={errorMessage}
+                isCancelling={isCancelling}
                 isAuthenticated={isAuthenticated}
                 isInitialized={isInitialized}
                 isSubmitting={isSubmitting}
                 performance={performance}
                 redirectPath={performanceDetailPath}
                 reservation={reservation}
+                onCancel={handleCancel}
                 onReserve={handleReserve}
               />
             </>

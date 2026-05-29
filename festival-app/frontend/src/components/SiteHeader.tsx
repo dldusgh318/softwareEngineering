@@ -108,6 +108,12 @@ export default function SiteHeader({
             <span className="hidden max-w-36 truncate text-sm font-bold text-white/78 sm:inline">
               {user?.name}
             </span>
+            <Link
+              href="/performances/tickets"
+              className="rounded-full border border-white/16 px-4 py-2 text-sm font-bold text-white/80 transition hover:bg-white/10 hover:text-white"
+            >
+              내 예매
+            </Link>
             <button
               type="button"
               onClick={logout}

@@ -60,6 +60,22 @@ public class TicketReservationTransactionService {
     ticketReservationRepository.update(reservation);
   }
 
+  @Transactional
+  public TicketReservation cancel(String reservationId, String userId, LocalDateTime cancelledAt) {
+    TicketReservation reservation = getReservation(reservationId);
+
+    if (!reservation.userId().equals(userId)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인의 예매만 취소할 수 있습니다.");
+    }
+
+    if (!reservation.isCancellable()) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "취소할 수 없는 예매 상태입니다.");
+    }
+
+    reservation.cancel(cancelledAt);
+    return ticketReservationRepository.update(reservation);
+  }
+
   private void validateReservable(Performance performance, String userId) {
     int reservedSeats = ticketReservationRepository.countReservedSeatsByPerformanceId(performance.id());
 

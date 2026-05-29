@@ -1,24 +1,44 @@
 "use client";
 
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
-import { getTicketReservation } from "@/apis/tickets/ticket.api";
+import { cancelTicketReservation, getTicketReservation } from "@/apis/tickets/ticket.api";
 import TicketQr from "@/components/performances/TicketQr";
 import SiteHeader from "@/components/SiteHeader";
 import type { TicketReservation } from "@/types/ticket/ticket.types";
+import { getAuthErrorMessage } from "@/utils/auth-error";
 
 export default function PerformanceTicketPage() {
   const params = useParams<{ reservationId: string }>();
+  const [cancelErrorMessage, setCancelErrorMessage] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
   const {
     data: reservation,
     error,
     isError,
     isLoading,
+    refetch,
   } = useQuery<TicketReservation>({
     queryKey: ["ticket-reservation", params.reservationId],
     queryFn: ({ signal }) => getTicketReservation(params.reservationId, signal),
   });
+  const canCancel = reservation?.status === "COMPLETED";
+
+  async function handleCancel() {
+    setCancelErrorMessage("");
+    setIsCancelling(true);
+
+    try {
+      await cancelTicketReservation(params.reservationId);
+      await refetch();
+    } catch (error) {
+      setCancelErrorMessage(await getAuthErrorMessage(error));
+    } finally {
+      setIsCancelling(false);
+    }
+  }
 
   return (
     <main className="bg-brand-navy min-h-screen text-white">
@@ -61,10 +81,35 @@ export default function PerformanceTicketPage() {
                 </div>
               </dl>
 
-              {reservation.qrCode ? (
+              {reservation.status === "FAILED" || reservation.status === "CANCELLED" ? (
+                <p className="border border-rose-300/40 bg-rose-500/15 p-3 text-sm text-rose-100">
+                  {reservation.status === "FAILED"
+                    ? "예매 처리에 실패해 선점된 좌석이 복구되었습니다."
+                    : "예매가 취소되어 좌석이 다시 예매 가능 상태로 복구되었습니다."}
+                </p>
+              ) : null}
+
+              {reservation.status === "COMPLETED" && reservation.qrCode ? (
                 <div className="border-line-subtle border-t pt-5">
                   <TicketQr qrCode={reservation.qrCode} />
                 </div>
+              ) : null}
+
+              {cancelErrorMessage ? (
+                <p className="border border-rose-300/40 bg-rose-500/15 p-3 text-sm text-rose-100">
+                  {cancelErrorMessage}
+                </p>
+              ) : null}
+
+              {canCancel ? (
+                <button
+                  type="button"
+                  disabled={isCancelling}
+                  onClick={handleCancel}
+                  className="h-11 w-full rounded-full border border-white/30 text-sm font-black text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isCancelling ? "예매 취소 중" : "예매 취소하기"}
+                </button>
               ) : null}
             </div>
           ) : null}
